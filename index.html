@@ -233,6 +233,21 @@
             </div>
         </div>
 
+        <!-- **NIEUW**: Pauze Herinnering Modal -->
+        <div id="break-reminder-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
+             <div class="bg-white rounded-lg shadow-2xl w-full max-w-md">
+                <header class="p-5 border-b flex justify-center items-center">
+                    <h2 id="break-reminder-title" class="text-xl font-semibold text-primary">Pauze-alarm! 🚶‍♀️</h2>
+                </header>
+                <main class="p-6 text-center">
+                    <p id="break-reminder-message" class="text-gray-700">Bericht wordt geladen...</p>
+                </main>
+                <footer class="bg-gray-50 p-4 flex justify-center items-center gap-4 rounded-b-lg">
+                    <button type="button" id="btn-close-break-reminder" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-8 rounded-lg shadow-sm">Ja, ik ga al...</button>
+                </footer>
+            </div>
+        </div>
+
     </div>
     
     <div id="notification" class="hidden"></div>
@@ -257,6 +272,7 @@
         document.addEventListener('DOMContentLoaded', () => {
             runInOfflineMode();
             setupEventListeners();
+            setupBreakReminder(); // **NIEUW**
         });
         
         function runInOfflineMode() {
@@ -591,6 +607,7 @@
         };
         const modals = {
             addTask: document.getElementById('add-task-modal'),
+            breakReminder: document.getElementById('break-reminder-modal'), // **NIEUW**
         };
 
         function showPage(pageToShow) {
@@ -613,7 +630,6 @@
         function addDeclaratieRow(declaratie = null, isCredit = false) {
             const container = document.getElementById('declaratie-regels');
             const div = document.createElement('div');
-            // **AANGEPAST**: Layout gewijzigd voor uploadknop
             div.className = 'detail-row declaratie-row grid grid-cols-12 gap-x-2 items-start';
             div.dataset.isCredit = isCredit;
 
@@ -836,6 +852,28 @@
             return isValid;
         }
 
+        // **NIEUWE FUNCTIES**: Voor de pauze herinnering
+        const breakMessages = [
+            "Psst, Ine! Je bureaustoel meldt dat hij je even wil missen. Tijd om de benen te strekken!",
+            "Je ogen hebben genoeg pixels gezien. Trakteer ze op een korte wandeling. De app wacht wel.",
+            "Alarm! Cooper voelt zich eenzaam. Een perfect excuus voor een korte pauze, vind je niet?",
+            "Tijd voor een frisse neus! Een klein rondje doet wonderen. Tot zo!"
+        ];
+        let breakMessageIndex = 0;
+        let breakInterval;
+
+        function showBreakReminder() {
+            const message = breakMessages[breakMessageIndex];
+            document.getElementById('break-reminder-message').textContent = message;
+            openModal(modals.breakReminder);
+            breakMessageIndex = (breakMessageIndex + 1) % breakMessages.length; // Ga naar de volgende, of terug naar start
+        }
+
+        function setupBreakReminder() {
+            showBreakReminder(); // Toon direct bij het openen
+            breakInterval = setInterval(showBreakReminder, 15 * 60 * 1000); // Herhaal elke 15 minuten
+        }
+
 
         // --- EVENT LISTENERS ---
         function setupEventListeners() {
@@ -854,6 +892,7 @@
                 if (target.id === 'btn-save-form') saveNewForm();
                 if (target.id === 'btn-open-modal') openModal(modals.addTask);
                 if (target.id === 'btn-close-modal') closeModal(modals.addTask);
+                if (target.id === 'btn-close-break-reminder') closeModal(modals.breakReminder); // **NIEUW**
                 if (target.id === 'btn-add-task') addTask();
 
                 const taskCard = target.closest('.task-card, .completed-task-item');
@@ -1001,10 +1040,9 @@
                     updateTotals();
                 }
 
-                // **NIEUW**: Klik op uploadknop
                 const uploadBtn = target.closest('.btn-upload-file');
                 if (uploadBtn) {
-                    uploadBtn.nextElementSibling.click(); // Triggert de verborgen file input
+                    uploadBtn.nextElementSibling.click(); 
                 }
             });
             
@@ -1028,7 +1066,6 @@
                  }
             });
 
-            // **NIEUW**: Event listener voor file input
             document.getElementById('app-container').addEventListener('change', (e) => {
                 if (e.target.classList.contains('file-input')) {
                     const fileNameDisplay = e.target.nextElementSibling;
