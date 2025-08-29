@@ -3,1080 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Derdengeld Verantwoording App</title>
-    <!-- Tailwind CSS voor snelle styling -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Font 'Inter' zoals in je voorbeeld -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: #f0f4f9;
-        }
-        /* Definieer de custom kleuren uit je voorbeeld voor hergebruik */
-        .bg-primary { background-color: #0E3190; }
-        .text-primary { color: #0E3190; }
-        .border-primary { border-color: #0E3190; }
-        .hover\:bg-primary-dark:hover { background-color: #0A246A; }
-        .bg-accent { background-color: #19AACD; }
-        .text-accent { color: #19AACD; }
-        .border-accent { border-color: #19AACD; }
-        .bg-subtle { background-color: #F8FBFC; }
-        .readonly-input { background-color: #e9ecef; opacity: 0.7; cursor: not-allowed; }
-        /* Stijl voor de custom notificatie */
-        #notification {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            padding: 12px 24px;
-            border-radius: 8px;
-            color: white;
-            font-weight: 500;
-            z-index: 1000;
-            transition: opacity 0.5s, transform 0.5s;
-        }
-        /* Stijl voor uitgeschakelde sectie */
-        .disabled-section {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        .invalid-input {
-            border-color: #ef4444; /* red-500 */
-            box-shadow: 0 0 0 1px #ef4444;
-        }
-    </style>
+    <title>Rechtspraak Zoeker - Jurisprudentie & Wettenbank</title>
+    <link rel="stylesheet" href="style-2.css">
 </head>
-<body class="text-gray-800">
-
-    <!-- Dit is de container voor de hele applicatie -->
-    <div id="app-container">
-
-        <!-- Banner voor offline modus -->
-        <div id="offline-banner" class="hidden bg-yellow-500 text-white text-center p-2 font-semibold">
-            Let op: App draait in offline demo-modus. Gegevens worden niet permanent opgeslagen.
-        </div>
-
-        <!-- PAGINA 1: DASHBOARD -->
-        <div id="dashboard-page">
-            <div class="flex flex-col h-screen">
-                <header class="bg-white shadow-md w-full p-4 flex justify-between items-center z-10">
-                    <div>
-                        <h1 class="text-2xl font-bold text-primary">Derdengeld Verantwoording</h1>
-                        <p class="text-sm text-gray-500">Dashboard</p>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <button id="btn-go-to-reports" class="text-sm font-medium text-gray-600 hover:text-primary">Rapportage</button>
-                        <span id="user-welcome" class="text-sm font-medium">Welkom...</span>
-                        <button id="btn-go-to-new-form" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-4 rounded-lg shadow-sm"> + Nieuw Formulier </button>
-                    </div>
-                </header>
-                <main id="dashboard-grid" class="flex-grow p-4 md:p-6 lg:p-8 grid grid-cols-1 md:grid-cols-2 gap-6 overflow-y-auto">
-                    <section class="flex flex-col"><h2 class="text-lg font-semibold mb-4 pb-2 border-b-2 border-yellow-500">Mijn Goedkeuringen</h2><div id="my-approvals-container" class="space-y-4 overflow-y-auto"><p class="text-sm text-gray-500">Geen openstaande verzoeken.</p></div></section>
-                    <section class="flex flex-col"><h2 class="text-lg font-semibold mb-4 pb-2 border-b-2 border-accent">Mijn Openstaande Taken</h2><div id="my-tasks-container" class="space-y-4 overflow-y-auto"><p class="text-sm text-gray-500">Taken worden geladen...</p></div></section>
-                    <section class="flex flex-col"><h2 class="text-lg font-semibold mb-4 pb-2 border-b-2 border-gray-300">Wachtend op Anderen</h2><div id="other-tasks-container" class="space-y-4 overflow-y-auto"><p class="text-sm text-gray-500">Taken worden geladen...</p></div></section>
-                    <section class="flex flex-col"><h2 class="text-lg font-semibold mb-4 pb-2 border-b-2 border-gray-300">Recente Activiteit</h2><div id="activity-feed-container" class="space-y-3 overflow-y-auto"><p class="text-sm text-gray-500">Nog geen activiteit.</p></div></section>
-                </main>
+<body>
+    <!-- Header -->
+    <div class="header-bar">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span>⚖️</span>
+                    <span>Rechtspraak Zoeker</span>
+                </div>
+                <div class="user-info">
+                    <strong>Raoul van Dort</strong>
+                    <div class="location">Maastricht, Limburg, Netherlands</div>
+                </div>
             </div>
         </div>
-
-        <!-- PAGINA 2: NIEUW FORMULIER (standaard verborgen) -->
-        <div id="new-form-page" class="hidden">
-             <div class="flex flex-col min-h-screen">
-                <header class="bg-white shadow-md w-full p-4 flex justify-between items-center z-10">
-                    <div><h1 class="text-2xl font-bold text-primary">Nieuwe Ontvangstbevestiging</h1><p class="text-sm text-gray-500">Vul de basisgegevens van de ontvangst in.</p></div>
-                    <a href="#" class="btn-back-to-dashboard text-sm font-medium text-gray-600 hover:text-primary">&larr; Terug naar Dashboard</a>
-                </header>
-                <main class="flex-grow p-4 md:p-6 lg:p-8 flex justify-center items-start">
-                    <form id="new-form-element" class="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
-                        <section class="p-6 border-b">
-                            <h2 class="text-xl font-semibold mb-4 text-primary">Ontvangstgegevens</h2>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label for="transactiedatum" class="block text-sm font-medium text-gray-700">Datum</label>
-                                    <input type="date" id="transactiedatum" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" required>
-                                </div>
-                                <div>
-                                    <label for="afkomstig-van" class="block text-sm font-medium text-gray-700">Afkomstig van</label>
-                                    <input type="text" id="afkomstig-van" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="Naam betaler" required>
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label for="inzake" class="block text-sm font-medium text-gray-700">Inzake</label>
-                                    <input type="text" id="inzake" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="Dossier / Cliënt" required>
-                                </div>
-                                <div>
-                                    <label for="derdenrekening" class="block text-sm font-medium text-gray-700">Derdenrekening (22.70.85.248)</label>
-                                    <div class="mt-1 relative"><div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center"><span class="text-gray-500 sm:text-sm">€</span></div><input type="number" id="derdenrekening" class="rekening-input block w-full rounded-md border-gray-300 pl-7 pr-12 sm:text-lg" step="0.01"></div>
-                                </div>
-                                <div>
-                                    <label for="kantoorrekening" class="block text-sm font-medium text-gray-700">Kantoorrekening (22.70.85.221)</label>
-                                    <div class="mt-1 relative"><div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center"><span class="text-gray-500 sm:text-sm">€</span></div><input type="number" id="kantoorrekening" class="rekening-input block w-full rounded-md border-gray-300 pl-7 pr-12 sm:text-lg" step="0.01"></div>
-                                </div>
-                            </div>
-                        </section>
-                        <section class="p-6">
-                            <h2 class="text-xl font-semibold mb-4 text-primary">Taken Toewijzen</h2>
-                            <div id="taken-lijst" class="space-y-4">
-                                <p id="taken-placeholder" class="text-sm text-gray-500 text-center">Nog geen taken toegewezen.</p>
-                            </div>
-                            <button type="button" id="btn-open-modal" class="mt-6 w-full flex justify-center items-center px-4 py-2 border border-dashed border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">+ Taak Toewijzen</button>
-                        </section>
-                        <footer class="bg-gray-50 p-4 flex justify-end items-center gap-4">
-                            <button type="button" class="btn-back-to-dashboard text-sm font-medium text-gray-600 hover:text-gray-900">Annuleren</button>
-                            <button type="button" id="btn-save-form" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-5 rounded-lg shadow-sm">Opslaan en Versturen</button>
-                        </footer>
-                    </form>
-                </main>
-            </div>
-        </div>
-
-        <!-- PAGINA 3: TAAK UITVOEREN (standaard verborgen) -->
-        <div id="task-view-page" class="hidden">
-            <div class="flex flex-col min-h-screen">
-                <header class="bg-white shadow-md w-full p-4 flex justify-between items-center z-10">
-                    <div>
-                        <h1 id="task-view-title" class="text-2xl font-bold text-primary">Verantwoording Laden...</h1>
-                        <p id="task-view-subtitle" class="text-sm text-gray-500">Aangemaakt door: ...</p>
-                    </div>
-                    <a href="#" class="btn-back-to-dashboard text-sm font-medium text-gray-600 hover:text-primary">&larr; Terug naar Dashboard</a>
-                </header>
-                <main class="flex-grow p-4 md:p-6 lg:p-8 flex justify-center items-start">
-                    <div class="w-full max-w-4xl bg-white rounded-lg shadow-xl overflow-hidden">
-                        <section id="task-view-header" class="p-6 bg-accent text-white">
-                            <!-- Inhoud wordt dynamisch geladen -->
-                        </section>
-                        <section id="task-interaction-section" class="p-6 border-b">
-                             <!-- Inhoud wordt dynamisch geladen -->
-                        </section>
-                        <section class="p-6 border-b bg-gray-50">
-                            <h2 class="text-xl font-semibold mb-4 text-gray-600">Hoofdgegevens (informatief)</h2>
-                            <div id="task-view-main-data" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <!-- Hoofdgegevens worden dynamisch geladen -->
-                            </div>
-                        </section>
-                         <section class="p-6 bg-gray-50 border-b">
-                            <h2 class="text-xl font-semibold mb-4 text-gray-600">Communicatie & Geschiedenis</h2>
-                            <div id="task-history-log" class="space-y-3 text-sm text-gray-600 max-h-64 overflow-y-auto"></div>
-                            <div class="mt-4 flex gap-2">
-                                <input type="text" id="new-comment-input" class="flex-grow rounded-md border-gray-300 shadow-sm sm:text-sm" placeholder="Plaats een opmerking...">
-                                <button id="btn-add-comment" class="bg-primary text-white px-4 py-2 rounded-md font-medium">Plaats</button>
-                            </div>
-                        </section>
-                        <footer id="task-view-footer" class="bg-gray-50 p-4 flex justify-end items-center gap-4">
-                            <!-- Knoppen worden dynamisch geladen -->
-                        </footer>
-                    </div>
-                </main>
-            </div>
-        </div>
-        
-        <!-- PAGINA 4: RAPPORTAGE (standaard verborgen) -->
-        <div id="report-page" class="hidden">
-             <div class="flex flex-col h-screen">
-                <header class="bg-white shadow-md w-full p-4 flex justify-between items-center z-10">
-                    <div>
-                        <h1 class="text-2xl font-bold text-primary">Rapportage</h1>
-                        <p class="text-sm text-gray-500">Overzicht van alle formulieren</p>
-                    </div>
-                    <a href="#" class="btn-back-to-dashboard text-sm font-medium text-gray-600 hover:text-primary">&larr; Terug naar Dashboard</a>
-                </header>
-                <main class="flex-grow p-4 md:p-6 lg:p-8 overflow-y-auto">
-                    <!-- Stats -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <div class="bg-white p-4 rounded-lg shadow"><p class="text-sm text-gray-500">Totaal Formulieren</p><p id="stats-total-forms" class="text-2xl font-bold">0</p></div>
-                        <div class="bg-white p-4 rounded-lg shadow"><p class="text-sm text-gray-500">Totaal Open Taken</p><p id="stats-open-tasks" class="text-2xl font-bold text-yellow-600">0</p></div>
-                        <div class="bg-white p-4 rounded-lg shadow"><p class="text-sm text-gray-500">Volledig Afgerond</p><p id="stats-completed-forms" class="text-2xl font-bold text-green-600">0</p></div>
-                    </div>
-                    <!-- Tabel -->
-                    <div class="bg-white rounded-lg shadow overflow-hidden">
-                        <table class="min-w-full">
-                            <thead class="bg-gray-50">
-                                <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Inzake</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Totaalbedrag</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Open Taken</th>
-                                </tr>
-                            </thead>
-                            <tbody id="report-table-body" class="bg-white divide-y divide-gray-200">
-                                <!-- Rijen worden hier dynamisch ingevoegd -->
-                            </tbody>
-                        </table>
-                    </div>
-                </main>
-            </div>
-        </div>
-        
-        <!-- MODALS -->
-        <div id="add-task-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
-             <div class="bg-white rounded-lg shadow-2xl w-full max-w-lg">
-                <header class="p-4 border-b"><h2 class="text-xl font-semibold text-primary">Taak Toewijzen</h2></header>
-                <main class="p-6 space-y-4">
-                    <div>
-                        <label for="modal-collega" class="block text-sm font-medium text-gray-700">Wijs toe aan collega:</label>
-                        <select id="modal-collega" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                            <option>Werknemer 1</option><option>Werknemer 2</option><option>Werknemer 3</option><option>Ine van Dort</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="modal-taak-type" class="block text-sm font-medium text-gray-700">Type taak:</label>
-                        <select id="modal-taak-type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm">
-                            <option value="verantwoording">Verantwoording Invullen</option>
-                            <option value="doorbetaling">Doorbetaling Voorbereiden</option>
-                        </select>
-                    </div>
-                </main>
-                <footer class="bg-gray-50 p-4 flex justify-end items-center gap-4 rounded-b-lg">
-                    <button type="button" id="btn-close-modal" class="text-sm font-medium text-gray-600 hover:text-gray-900">Annuleren</button>
-                    <button type="button" id="btn-add-task" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-5 rounded-lg shadow-sm">Taak Toewijzen</button>
-                </footer>
-            </div>
-        </div>
-
-        <!-- **NIEUW**: Pauze Herinnering Modal -->
-        <div id="break-reminder-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center p-4 z-50">
-             <div class="bg-white rounded-lg shadow-2xl w-full max-w-md">
-                <header class="p-5 border-b flex justify-center items-center">
-                    <h2 id="break-reminder-title" class="text-xl font-semibold text-primary">Pauze-alarm! 🚶‍♀️</h2>
-                </header>
-                <main class="p-6 text-center">
-                    <p id="break-reminder-message" class="text-gray-700">Bericht wordt geladen...</p>
-                </main>
-                <footer class="bg-gray-50 p-4 flex justify-center items-center gap-4 rounded-b-lg">
-                    <button type="button" id="btn-close-break-reminder" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-8 rounded-lg shadow-sm">Ja, ik ga al...</button>
-                </footer>
-            </div>
-        </div>
-
     </div>
-    
-    <div id="notification" class="hidden"></div>
 
-    <!-- HET SCRIPT DAT DE APP LAAT WERKEN -->
-    <script type="module">
-        // --- GLOBALE STAAT & CONFIGURATIE ---
-        let currentUserDisplayName = 'Ine van Dort';
-        let takenBuffer = [];
-        let activeTask = null;
-        let lastUsedDate = new Date().toISOString().split('T')[0];
-        
-        // Lokale data voor offline modus
-        let localDatabase = {
-            forms: [],
-            takeoverRequests: [], 
-            reopenRequests: [], 
-            activityLog: []
-        };
-        
-        // --- INITIALISATIE ---
-        document.addEventListener('DOMContentLoaded', () => {
-            runInOfflineMode();
-            setupEventListeners();
-            setupBreakReminder(); // **NIEUW**
-        });
-        
-        function runInOfflineMode() {
-            document.getElementById('offline-banner').classList.remove('hidden');
-            document.getElementById('user-welcome').textContent = `Welkom, ${currentUserDisplayName}`;
-            renderDashboard();
-        }
-
-        // --- RENDER FUNCTIES ---
-        function renderDashboard() {
-            const myTasksContainer = document.getElementById('my-tasks-container');
-            const otherTasksContainer = document.getElementById('other-tasks-container');
-            const activityContainer = document.getElementById('activity-feed-container');
-            const approvalsContainer = document.getElementById('my-approvals-container');
-
-            myTasksContainer.innerHTML = '';
-            otherTasksContainer.innerHTML = '';
-            activityContainer.innerHTML = '';
-            approvalsContainer.innerHTML = ''; 
-
-            const allTasks = localDatabase.forms.flatMap(form => 
-                form.taken.map(taak => ({ ...taak, formId: form.id, formInzake: form.inzake, aangemaaktDoor: form.aangemaaktDoor, totaalbedrag: form.bedrag }))
-            );
-
-            const myOpenTasks = allTasks.filter(taak => taak.collega === currentUserDisplayName && taak.status === 'open');
-            const otherOpenTasks = allTasks.filter(taak => taak.collega !== currentUserDisplayName && taak.status === 'open');
-            
-            if (myOpenTasks.length === 0) myTasksContainer.innerHTML = '<p class="text-sm text-gray-500">Je hebt geen openstaande taken.</p>';
-            myOpenTasks.forEach(taak => myTasksContainer.innerHTML += createTaskCard(taak, true));
-
-            if (otherOpenTasks.length === 0) otherTasksContainer.innerHTML = '<p class="text-sm text-gray-500">Er zijn geen andere openstaande taken.</p>';
-            otherOpenTasks.forEach(taak => otherTasksContainer.innerHTML += createTaskCard(taak, false));
-
-            const takeoverRequests = localDatabase.takeoverRequests.filter(req => {
-                const form = localDatabase.forms.find(f => f.id === req.formId);
-                return form && form.aangemaaktDoor === currentUserDisplayName && req.status === 'pending';
-            });
-            takeoverRequests.forEach(req => {
-                const form = localDatabase.forms.find(f => f.id === req.formId);
-                if (form) approvalsContainer.innerHTML += createTakeoverApprovalCard(req, form.inzake);
-            });
-
-            if (currentUserDisplayName === 'Ine van Dort') {
-                const reopenRequests = localDatabase.reopenRequests.filter(req => req.status === 'pending');
-                reopenRequests.forEach(req => {
-                    const form = localDatabase.forms.find(f => f.id === req.formId);
-                    if (form) approvalsContainer.innerHTML += createReopenApprovalCard(req, form.inzake);
-                });
-            }
-
-            if (approvalsContainer.innerHTML.trim() === '') {
-                approvalsContainer.innerHTML = '<p class="text-sm text-gray-500">Geen openstaande verzoeken.</p>';
-            }
-            
-            if (localDatabase.activityLog.length === 0) {
-                activityContainer.innerHTML = '<p class="text-sm text-gray-500">Nog geen activiteit.</p>';
-            } else {
-                [...localDatabase.activityLog].reverse().slice(0, 5).forEach(log => {
-                    activityContainer.innerHTML += createActivityItem(log);
-                });
-            }
-        }
-
-        function createTakeoverApprovalCard(req, inzake) {
-            return `
-                <div class="bg-white p-4 rounded-lg shadow-md border-l-4 border-yellow-500">
-                    <h3 class="font-bold text-gray-800">Inzake: ${inzake}</h3>
-                    <p class="text-sm mt-2">
-                        <span class="font-semibold">${req.requestedBy}</span> wil taak overnemen van <span class="font-semibold">${req.originalOwner}</span>.
-                    </p>
-                    <div class="flex justify-end gap-2 mt-3">
-                        <button data-request-id="${req.id}" class="btn-reject-takeover text-xs font-bold py-1 px-3 rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Afwijzen</button>
-                        <button data-request-id="${req.id}" class="btn-approve-takeover text-xs font-bold py-1 px-3 rounded-lg bg-green-100 text-green-700 hover:bg-green-200">Goedkeuren</button>
-                    </div>
+    <!-- Main Content -->
+    <div class="container">
+        <div class="main-content-grid">
+            <!-- Links: Jurisprudentie Zoeker -->
+            <div class="dashboard-card" id="jurisprudenceCard">
+                <div class="card-header">
+                    <h2>⚖️ Jurisprudentie Zoeker</h2>
                 </div>
-            `;
-        }
-
-        function createReopenApprovalCard(req, inzake) {
-            return `
-                <div class="bg-white p-4 rounded-lg shadow-md border-l-4 border-blue-500">
-                    <h3 class="font-bold text-gray-800">Inzake: ${inzake}</h3>
-                    <p class="text-sm mt-2">
-                        <span class="font-semibold">${req.requestedBy}</span> verzoekt om taak te heropenen.
-                    </p>
-                    <div class="flex justify-end gap-2 mt-3">
-                        <button data-request-id="${req.id}" class="btn-reject-reopen text-xs font-bold py-1 px-3 rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Afwijzen</button>
-                        <button data-request-id="${req.id}" class="btn-approve-reopen text-xs font-bold py-1 px-3 rounded-lg bg-green-100 text-green-700 hover:bg-green-200">Goedkeuren</button>
-                    </div>
-                </div>
-            `;
-        }
-
-        function createTaskCard(taak, isMine) {
-            const borderColor = isMine ? 'border-accent' : 'border-gray-300';
-            const titleColor = isMine ? 'text-primary' : 'text-gray-700';
-            const taakNaam = taak.type === 'verantwoording' ? 'Verantwoording' : 'Doorbetaling';
-            return `
-                <div class="bg-white p-4 rounded-lg shadow-md border-l-4 ${borderColor} cursor-pointer task-card" data-form-id="${taak.formId}" data-taak-id="${taak.id}">
-                    <h3 class="font-bold ${titleColor}">Inzake: ${taak.formInzake}</h3>
-                    <p class="text-sm font-semibold mt-2">Taak: ${taakNaam} (€ ${taak.totaalbedrag.toFixed(2)})</p>
-                    ${!isMine ? `<p class="text-sm mt-1">Wacht op: <span class="font-semibold">${taak.collega}</span></p>` : ''}
-                </div>`;
-        }
-        
-        function createActivityItem(log) {
-            const timestamp = new Date(log.timestamp).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-            const isClickable = log.message.includes('heeft de taak afgerond');
-            const cursorClass = isClickable ? 'cursor-pointer hover:bg-gray-200' : '';
-            const dataAttributes = isClickable ? `data-form-id="${log.formId}" data-taak-id="${log.taakId}"` : '';
-            const itemClass = isClickable ? 'completed-task-item' : '';
-
-            return `<div class="text-sm p-3 bg-gray-100 rounded-md ${cursorClass} ${itemClass}" ${dataAttributes}><p>${log.message}</p><p class="text-xs text-gray-500 mt-1">${timestamp}</p></div>`;
-        }
-
-        function renderTaken() {
-            const container = document.getElementById('taken-lijst');
-            const placeholder = document.getElementById('taken-placeholder');
-            
-            if (!container || !placeholder) return;
-
-            container.querySelectorAll('.taak-item').forEach(el => el.remove());
-
-            if (takenBuffer.length === 0) {
-                placeholder.classList.remove('hidden');
-            } else {
-                placeholder.classList.add('hidden');
-                takenBuffer.forEach((taak, index) => {
-                    const taakElement = document.createElement('div');
-                    taakElement.className = 'taak-item bg-subtle p-4 rounded-md border flex items-center justify-between';
-                    const taakNaam = taak.type === 'verantwoording' ? 'Verantwoording' : 'Doorbetaling';
-                    taakElement.innerHTML = `
-                        <div>
-                            <p class="font-semibold">${taakNaam}</p>
-                            <p class="text-sm text-gray-600">Toegewezen aan: <span class="font-medium">${taak.collega}</span></p>
-                        </div>
-                        <button type="button" data-index="${index}" class="btn-remove-task text-gray-400 hover:text-red-600 text-xl">&times;</button>
-                    `;
-                    container.appendChild(taakElement);
-                });
-            }
-        }
-
-        function findTask(formId, taakId) {
-            const form = localDatabase.forms.find(f => f.id === formId);
-            const taak = form ? form.taken.find(t => t.id === taakId) : undefined;
-            return { form, taak };
-        }
-        
-        function renderReportPage() {
-            const forms = localDatabase.forms;
-            document.getElementById('stats-total-forms').textContent = forms.length;
-
-            const allTasks = forms.flatMap(form => form.taken);
-            const openTasks = allTasks.filter(t => t.status === 'open').length;
-            document.getElementById('stats-open-tasks').textContent = openTasks;
-
-            const completedForms = forms.filter(form => form.taken.every(t => t.status === 'completed')).length;
-            document.getElementById('stats-completed-forms').textContent = completedForms;
-
-            const tableBody = document.getElementById('report-table-body');
-            tableBody.innerHTML = '';
-            if (forms.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4 text-gray-500">Geen data om te tonen.</td></tr>`;
-                return;
-            }
-
-            forms.forEach(form => {
-                const openTasksCount = form.taken.filter(t => t.status === 'open').length;
-                const status = openTasksCount === 0 ? '<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">Voltooid</span>' : `<span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">In behandeling</span>`;
-                const row = `
-                    <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${form.inzake || 'Geen omschrijving'}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">€ ${form.bedrag.toFixed(2)}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${status}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${openTasksCount}</td>
-                    </tr>
-                `;
-                tableBody.innerHTML += row;
-            });
-        }
-
-        function populateTaskView(form, taak) {
-            activeTask = { formId: form.id, taakId: taak.id, originalAmount: form.bedrag }; 
-
-            document.getElementById('task-view-title').textContent = `Inzake: ${form.inzake}`;
-            document.getElementById('task-view-subtitle').textContent = `Aangemaakt door: ${form.aangemaaktDoor}`;
-            
-            const header = document.getElementById('task-view-header');
-            const taakNaam = taak.type === 'verantwoording' ? 'Verantwoording' : 'Doorbetaling';
-            header.innerHTML = `<h2 class="text-2xl font-bold">Taak: ${taakNaam}</h2><p class="mt-1">Totaalbedrag: <strong>€ ${form.bedrag.toFixed(2)}</strong>.</p>`;
-
-            const mainData = document.getElementById('task-view-main-data');
-            mainData.innerHTML = `<div><label class="block text-sm font-medium text-gray-700">Afkomstig van</label><input type="text" value="${form.afkomstigVan}" class="mt-1 block w-full rounded-md readonly-input" readonly></div><div><label class="block text-sm font-medium text-gray-700">Datum van transactie</label><input type="text" value="${form.datum}" class="mt-1 block w-full rounded-md readonly-input" readonly></div>`;
-            
-            const interactionSection = document.getElementById('task-interaction-section');
-            interactionSection.innerHTML = `
-                <div class="space-y-6">
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Verantwoording (Declaraties)</h3>
-                        <div id="declaratie-regels" class="space-y-2"></div>
-                        <div class="flex gap-4 mt-2">
-                            <button id="btn-add-declaratie" class="text-sm text-primary font-medium hover:underline">+ Declaratieregel</button>
-                            <button id="btn-add-credit" class="text-sm text-primary font-medium hover:underline">+ Creditdeclaratieregel</button>
-                        </div>
-                        <div class="text-right font-bold mt-2">Subtotaal: € <span id="verantwoording-subtotaal">0.00</span></div>
-                    </div>
-                    <hr>
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2">Doorbetalingen</h3>
-                        <div id="doorbetaling-regels" class="space-y-4"></div>
-                        <button id="btn-add-doorbetaling" class="text-sm text-primary font-medium hover:underline mt-2">+ Doorbetaling</button>
-                        <div class="text-right font-bold mt-2">Totaal: € <span id="doorbetaling-totaal">0.00</span></div>
-                    </div>
-                    <hr>
-                     <div class="text-right font-bold text-lg mt-2">Balans: <span id="balans-totaal" class="px-2 py-1 rounded">€ 0.00</span></div>
-                </div>
-            `;
-
-            const footer = document.getElementById('task-view-footer');
-            const hasPendingTakeover = localDatabase.takeoverRequests.some(r => r.taakId === taak.id && r.status === 'pending');
-            const hasPendingReopen = localDatabase.reopenRequests.some(r => r.taakId === taak.id && r.status === 'pending');
-
-            if (taak.status === 'completed') {
-                if (hasPendingReopen) {
-                    footer.innerHTML = `<button disabled class="bg-gray-400 text-white font-bold py-2 px-5 rounded-lg shadow-sm cursor-not-allowed">Heropening Aangevraagd</button>`;
-                } else {
-                    footer.innerHTML = `<button id="btn-request-reopen" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-5 rounded-lg shadow-sm">Heropening Aanvragen</button>`;
-                }
-                interactionSection.classList.add('disabled-section');
-            } else if (taak.collega === currentUserDisplayName) {
-                 footer.innerHTML = `<button id="btn-complete-task" class="bg-primary hover:bg-primary-dark text-white font-bold py-2 px-5 rounded-lg shadow-sm">Taak Afronden</button>`;
-                 interactionSection.classList.remove('disabled-section');
-            } else {
-                 if (hasPendingTakeover) {
-                    footer.innerHTML = `<button disabled class="bg-gray-400 text-white font-bold py-2 px-5 rounded-lg shadow-sm cursor-not-allowed">Verzoek Ingediend</button>`;
-                 } else {
-                    footer.innerHTML = `<button id="btn-request-takeover" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-5 rounded-lg shadow-sm">Overname Aanvragen</button>`;
-                 }
-                 interactionSection.classList.add('disabled-section');
-            }
-            
-            const historyLog = document.getElementById('task-history-log');
-            historyLog.innerHTML = '';
-            if (form.history && form.history.length > 0) {
-                [...form.history].reverse().forEach(log => {
-                    const timestamp = new Date(log.timestamp).toLocaleString('nl-NL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                    historyLog.innerHTML += `<div class="p-2 border-b border-gray-200"><div>${log.message}</div><div class="text-xs text-gray-500 text-right">${timestamp}</div></div>`;
-                });
-            } else {
-                historyLog.innerHTML = '<p class="text-gray-500">Geen geschiedenis voor dit formulier.</p>';
-            }
-
-            renderExistingDetails(form);
-        }
-        
-        // --- LOGICA FUNCTIES ---
-        function saveNewForm() {
-            const form = {
-                id: `form_${Date.now()}`,
-                datum: document.getElementById('transactiedatum').value,
-                afkomstigVan: document.getElementById('afkomstig-van').value,
-                inzake: document.getElementById('inzake').value,
-                rekeningType: document.getElementById('derdenrekening').value ? 'derden' : 'kantoor',
-                bedrag: parseFloat(document.getElementById('derdenrekening').value || document.getElementById('kantoorrekening').value) || 0,
-                aangemaaktDoor: currentUserDisplayName,
-                taken: takenBuffer,
-                history: [],
-                declaraties: [],
-                doorbetalingen: []
-            };
-
-            if (!form.datum || !form.afkomstigVan || !form.inzake || !form.bedrag || form.taken.length === 0) {
-                showNotification('Vul alle verplichte velden in en wijs minimaal één taak toe.', 'error');
-                return;
-            }
-            
-            lastUsedDate = form.datum;
-            localDatabase.forms.push(form);
-            logEvent(form.id, null, `<span class="font-semibold">${currentUserDisplayName}</span> heeft een nieuwe ontvangstbevestiging aangemaakt.`);
-            showNotification('Formulier succesvol aangemaakt!', 'success');
-            resetAndShowPage(pages.dashboard);
-        }
-        
-        function addTask() {
-            const collega = document.getElementById('modal-collega').value;
-            const type = document.getElementById('modal-taak-type').value;
-
-            if (!collega || !type) {
-                showNotification('Selecteer een collega en een type taak.', 'error');
-                return;
-            }
-
-            takenBuffer.push({ id: `taak_${Date.now()}_${Math.random()}`, collega, type, status: 'open' });
-            renderTaken();
-            closeModal(modals.addTask);
-        }
-
-        function resetNewForm() {
-            const form = document.getElementById('new-form-element');
-            if (form) form.reset();
-            takenBuffer = [];
-            renderTaken();
-        }
-
-        function logEvent(formId, taakId, message, type = 'generic') {
-            const form = localDatabase.forms.find(f => f.id === formId);
-            const timestamp = new Date();
-            if (form) {
-                if (!form.history) form.history = [];
-                form.history.push({message, timestamp});
-            }
-            localDatabase.activityLog.push({ message, formId, taakId, type, timestamp });
-        }
-        
-        function showNotification(message, type = 'info') {
-             const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.className = `hidden`; 
-            const bgColor = type === 'success' ? 'bg-green-600' : (type === 'error' ? 'bg-red-600' : 'bg-blue-600');
-            notification.classList.add(bgColor);
-            notification.classList.remove('hidden');
-            setTimeout(() => { notification.classList.add('hidden'); }, 3000);
-        }
-
-        // --- UI & NAVIGATIE ---
-        const pages = {
-            dashboard: document.getElementById('dashboard-page'),
-            newForm: document.getElementById('new-form-page'),
-            taskView: document.getElementById('task-view-page'),
-            report: document.getElementById('report-page')
-        };
-        const modals = {
-            addTask: document.getElementById('add-task-modal'),
-            breakReminder: document.getElementById('break-reminder-modal'), // **NIEUW**
-        };
-
-        function showPage(pageToShow) {
-            Object.values(pages).forEach(p => { if(p) p.classList.add('hidden') });
-            if(pageToShow) pageToShow.classList.remove('hidden');
-            if (pageToShow === pages.dashboard) renderDashboard();
-            if (pageToShow === pages.report) renderReportPage();
-        }
-
-        function resetAndShowPage(pageToShow) {
-            resetNewForm();
-            showPage(pageToShow);
-        }
-        
-        const openModal = (modal) => { if(modal) modal.classList.remove('hidden'); }
-        const closeModal = (modal) => { if(modal) modal.classList.add('hidden'); }
-
-        // --- FUNCTIES VOOR TAAK DETAILS ---
-
-        function addDeclaratieRow(declaratie = null, isCredit = false) {
-            const container = document.getElementById('declaratie-regels');
-            const div = document.createElement('div');
-            div.className = 'detail-row declaratie-row grid grid-cols-12 gap-x-2 items-start';
-            div.dataset.isCredit = isCredit;
-
-            const omschrijving = declaratie ? declaratie.omschrijving : '';
-            const bedrag = declaratie ? Math.abs(declaratie.bedrag) : '';
-            const fileName = declaratie ? declaratie.fileName : '';
-
-            div.innerHTML = `
-                <div class="col-span-5">
-                    <input type="text" class="omschrijving-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${omschrijving}" placeholder="${isCredit ? 'Creditdeclaratienummer' : 'Declaratienummer'}">
-                </div>
-                <div class="col-span-3 relative">
-                    <div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center"><span class="text-gray-500 sm:text-sm">${isCredit ? '- €' : '€'}</span></div>
-                    <input type="number" class="bedrag-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm pl-8" value="${bedrag}" step="0.01" placeholder="0.00">
-                </div>
-                <div class="col-span-3">
-                     <button type="button" class="btn-upload-file mt-1 w-full text-sm text-gray-700 bg-gray-100 hover:bg-gray-200 py-2 px-3 rounded-md shadow-sm border border-gray-300">Bestand kiezen</button>
-                     <input type="file" class="file-input hidden">
-                     <span class="file-name-display text-xs text-gray-500 mt-1 truncate block">${fileName || ''}</span>
-                </div>
-                <div class="col-span-1 text-right">
-                    <button type="button" class="btn-remove-row text-gray-400 hover:text-red-600 text-2xl mt-1">&times;</button>
-                </div>
-            `;
-            container.appendChild(div);
-            updateTotals();
-        }
-
-        function addDoorbetalingRow(doorbetaling = null) {
-            const container = document.getElementById('doorbetaling-regels');
-            const div = document.createElement('div');
-            div.className = 'detail-row doorbetaling-row bg-gray-50 p-4 rounded-lg border relative';
-
-            const naam = doorbetaling ? doorbetaling.naam : '';
-            const iban = doorbetaling ? doorbetaling.iban : '';
-            const omschrijving = doorbetaling ? doorbetaling.omschrijving : '';
-            const bic = doorbetaling ? doorbetaling.bic : '';
-            const bedrag = doorbetaling ? doorbetaling.bedrag : '';
-            const spoed = doorbetaling ? doorbetaling.spoed : false;
-            const fileName = doorbetaling ? doorbetaling.fileName : '';
-
-            div.innerHTML = `
-                <button type="button" class="btn-remove-row absolute top-2 right-3 text-gray-400 hover:text-red-600 text-2xl">&times;</button>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600">Naam</label>
-                        <input type="text" class="naam-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${naam}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600">IBAN</label>
-                        <input type="text" class="iban-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${iban}">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-xs font-medium text-gray-600">Omschrijving</label>
-                        <input type="text" class="omschrijving-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${omschrijving}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600">BIC (optioneel)</label>
-                        <input type="text" class="bic-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm" value="${bic}">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-gray-600">Bedrag</label>
-                        <div class="relative">
-                           <div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center"><span class="text-gray-500 sm:text-sm">€</span></div>
-                           <input type="number" class="bedrag-input mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm pl-7" value="${bedrag}" step="0.01" placeholder="0.00">
+                <div class="card-body">
+                    <!-- Quick Search Bar -->
+                    <div class="quick-search-section">
+                        <div class="search-input-container">
+                            <input type="text" id="quickSearchInput" placeholder="Zoek op trefwoord, ECLI, zaaknummer..." class="quick-search-input">
+                            <button class="quick-search-button" id="quickSearchButton">
+                                <span>🔍</span>
+                            </button>
                         </div>
                     </div>
-                     <div class="md:col-span-2">
-                        <label class="block text-xs font-medium text-gray-600">Bijlage</label>
-                        <button type="button" class="btn-upload-file mt-1 w-full text-sm text-gray-700 bg-white hover:bg-gray-50 py-2 px-3 rounded-md shadow-sm border border-gray-300">Bestand kiezen</button>
-                        <input type="file" class="file-input hidden">
-                        <span class="file-name-display text-xs text-gray-500 mt-1 truncate block">${fileName || ''}</span>
+
+                    <!-- Filter Toggle -->
+                    <div class="filter-toggle-container">
+                        <button class="tertiary-button" id="showFiltersButton">
+                            <span id="filterToggleIcon">▼</span> Geavanceerd zoeken
+                        </button>
+                        <button class="reset-button" id="resetFiltersButton" style="display: none;">
+                            🗑️ Filters wissen
+                        </button>
+                    </div>
+
+                    <!-- Filters Section -->
+                    <div id="apiFilters" class="filters-section" style="display: none;">
+                        <!-- Basis Filters -->
+                        <div class="filter-section">
+                            <h3>🎯 Basis Filters</h3>
+                            <div class="basic-filter-grid">
+                                <!-- Rechtsgebied -->
+                                <div class="filter-group">
+                                    <label for="subject">Rechtsgebied</label>
+                                    <select id="subject" class="filter-input">
+                                        <option value="">-- Alle rechtsgebieden --</option>
+                                    </select>
+                                </div>
+
+                                <!-- Type Document - Radio Buttons -->
+                                <div class="filter-group">
+                                    <label>Type Document</label>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="" checked>
+                                            <span class="radio-custom"></span>
+                                            Alle
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="Uitspraak">
+                                            <span class="radio-custom"></span>
+                                            Uitspraak
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="Conclusie">
+                                            <span class="radio-custom"></span>
+                                            Conclusie
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Periode Presets -->
+                                <div class="filter-group">
+                                    <label for="periodPreset">Periode</label>
+                                    <select id="periodPreset" class="filter-input">
+                                        <option value="">-- Selecteer periode --</option>
+                                        <option value="last-month">Laatste maand</option>
+                                        <option value="last-3-months">Laatste 3 maanden</option>
+                                        <option value="last-6-months">Laatste 6 maanden</option>
+                                        <option value="this-year">Dit jaar</option>
+                                        <option value="last-year">Vorig jaar</option>
+                                        <option value="custom">Aangepaste periode...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sortering -->
+                                <div class="filter-group">
+                                    <label for="sortOrder">Sortering</label>
+                                    <select id="sortOrder" class="filter-input">
+                                        <option value="DESC">Nieuwste eerst</option>
+                                        <option value="ASC">Oudste eerst</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Geavanceerde Filters -->
+                        <div class="filter-section advanced-section" id="advancedFilters" style="display: none;">
+                            <h3>⚙️ Geavanceerde Filters</h3>
+                            <div class="advanced-filter-grid">
+                                <!-- Custom Date Range -->
+                                <div class="filter-group date-range-group" id="customDateRange" style="display: none;">
+                                    <label>Uitspraakdatum periode</label>
+                                    <div class="date-inputs">
+                                        <input type="date" id="dateFrom" class="filter-input" placeholder="Van datum">
+                                        <span class="date-separator">tot</span>
+                                        <input type="date" id="dateTo" class="filter-input" placeholder="Tot datum">
+                                    </div>
+                                </div>
+
+                                <!-- Instantie met autocomplete -->
+                                <div class="filter-group autocomplete-container">
+                                    <label for="creator">Instantie</label>
+                                    <div class="input-with-clear">
+                                        <input type="text" id="creator" class="filter-input" placeholder="Begin met typen...">
+                                        <button type="button" class="clear-input" id="clearCreator" style="display: none;">✕</button>
+                                    </div>
+                                    <div id="creatorSuggestions" class="autocomplete-suggestions"></div>
+                                </div>
+
+                                <!-- Procedure -->
+                                <div class="filter-group">
+                                    <label for="procedure">Procedure</label>
+                                    <select id="procedure" class="filter-input">
+                                        <option value="">-- Alle procedures --</option>
+                                    </select>
+                                </div>
+
+                                <!-- Wijzigingsdatum -->
+                                <div class="filter-group">
+                                    <label>Wijzigingsdatum periode</label>
+                                    <div class="date-inputs">
+                                        <input type="date" id="modifiedFrom" class="filter-input" placeholder="Van datum">
+                                        <span class="date-separator">tot</span>
+                                        <input type="date" id="modifiedTo" class="filter-input" placeholder="Tot datum">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Advanced Toggle Button -->
+                            <div class="advanced-toggle">
+                                <button class="tertiary-button" id="toggleAdvanced">
+                                    <span id="advancedToggleIcon">▼</span> Meer opties
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="primary-button" id="apiSearchButton">
+                                <span class="button-icon">🔍</span> Zoek uitspraken
+                            </button>
+                            <div class="button-subtext">Maximaal 1000 resultaten per zoekopdracht</div>
+                        </div>
+                    </div>
+
+                    <!-- Status en Loading -->
+                    <div id="jurisprudenceStatus" class="status-message"></div>
+                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>Zoeken in database...</span>
+                    </div>
+
+                    <!-- Slimme Filter Sectie -->
+                    <div id="smartSearchSection" class="smart-search-section hidden">
+                        <hr class="separator">
+                        <div class="filter-section">
+                            <h3>🎯 Verfijn resultaten</h3>
+                            <div class="smart-search-controls">
+                                <div class="filter-group">
+                                    <label for="smartSearchInput">Zoek binnen resultaten</label>
+                                    <div class="search-input-container">
+                                        <input type="text" id="smartSearchInput" placeholder="Zoek op trefwoord..." class="filter-input">
+                                        <button class="secondary-button" id="smartFilterButton">Filter</button>
+                                    </div>
+                                </div>
+                                <div class="filter-group">
+                                    <label>Zoek in:</label>
+                                    <div class="checkbox-group">
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="searchIn" value="title" checked>
+                                            <span class="checkmark"></span>
+                                            Titel
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="searchIn" value="summary" checked>
+                                            <span class="checkmark"></span>
+                                            Samenvatting
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="searchIn" value="ecli">
+                                            <span class="checkmark"></span>
+                                            ECLI
+                                        </label>
+                                        <label class="checkbox-option">
+                                            <input type="checkbox" name="searchIn" value="zaaknummer">
+                                            <span class="checkmark"></span>
+                                            Zaaknummer
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Resultaten -->
+                    <div id="jurisprudenceResults" class="results-container"></div>
+                    <div id="jurisprudencePagination" class="pagination-container"></div>
+                </div>
+            </div>
+
+            <!-- Rechts: Sidebar -->
+            <div class="sidebar">
+                <!-- Gepind Item -->
+                <div class="dashboard-card" id="pinnedItemContainer" style="display: none;">
+                    <div class="card-header">
+                        <h3>📌 Gepind Dossier</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="pinnedItemContent"></div>
+                        <div class="search-triggers">
+                            <h5>Gerelateerde zoekopdrachten:</h5>
+                            <!-- Dynamisch gegenereerd -->
+                        </div>
                     </div>
                 </div>
-                <div class="mt-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" class="spoed-checkbox h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary" ${spoed ? 'checked' : ''}>
-                        <span class="ml-2 text-sm text-gray-700">Kosten voor spoedopdracht meenemen? (+ €6.00)</span>
-                    </label>
+
+                <!-- Wettenbank Zoeker -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3>📚 Wettenbank Zoeker</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="filter-group">
+                            <label for="wettenbankKeyword">Zoeken op trefwoord:</label>
+                            <div class="search-input-container">
+                                <input type="text" id="wettenbankKeyword" placeholder="Trefwoord" class="filter-input">
+                                <button class="primary-button" id="wettenbankSearchButton">Zoek in Wettenbank</button>
+                            </div>
+                        </div>
+                        <div id="wettenbankStatus" class="status-message"></div>
+                        <div id="wettenbankResults" class="results-container"></div>
+                    </div>
                 </div>
-            `;
-            container.appendChild(div);
-            updateTotals();
-        }
+            </div>
+        </div>
+    </div>
 
-        function renderExistingDetails(form) {
-            if (form.declaraties) {
-                form.declaraties.forEach(d => addDeclaratieRow(d, d.bedrag < 0));
-            }
-            if (form.doorbetalingen) {
-                form.doorbetalingen.forEach(d => addDoorbetalingRow(d));
-            }
-            updateTotals();
-        }
-        
-        function updateTotals() {
-            let declaratieTotaal = 0;
-            document.querySelectorAll('.declaratie-row').forEach(row => {
-                const bedragInput = row.querySelector('.bedrag-input');
-                let bedrag = parseFloat(bedragInput.value) || 0;
-                if (row.dataset.isCredit === 'true') {
-                    declaratieTotaal -= bedrag;
-                } else {
-                    declaratieTotaal += bedrag;
-                }
-            });
-            document.getElementById('verantwoording-subtotaal').textContent = declaratieTotaal.toFixed(2);
-
-            let doorbetalingTotaal = 0;
-            document.querySelectorAll('.doorbetaling-row').forEach(row => {
-                let bedrag = parseFloat(row.querySelector('.bedrag-input').value) || 0;
-                if (row.querySelector('.spoed-checkbox').checked) {
-                    bedrag += 6.00;
-                }
-                doorbetalingTotaal += bedrag;
-            });
-            document.getElementById('doorbetaling-totaal').textContent = doorbetalingTotaal.toFixed(2);
-            
-            const balans = activeTask.originalAmount - declaratieTotaal - doorbetalingTotaal;
-            const balansEl = document.getElementById('balans-totaal');
-            balansEl.textContent = `€ ${balans.toFixed(2)}`;
-            if (Math.abs(balans) < 0.01) {
-                balansEl.className = 'px-2 py-1 rounded bg-green-100 text-green-800';
-            } else {
-                balansEl.className = 'px-2 py-1 rounded bg-red-100 text-red-800';
-            }
-        }
-
-        function saveTaskDetails(form) {
-            form.declaraties = [];
-            document.querySelectorAll('.declaratie-row').forEach(row => {
-                const omschrijving = row.querySelector('.omschrijving-input').value.trim();
-                let bedrag = parseFloat(row.querySelector('.bedrag-input').value) || 0;
-                if (row.dataset.isCredit === 'true') {
-                    bedrag = -bedrag;
-                }
-                if (omschrijving && bedrag !== 0) {
-                    form.declaraties.push({ 
-                        omschrijving, 
-                        bedrag,
-                        fileName: row.querySelector('.file-name-display').textContent || null
-                    });
-                }
-            });
-
-            form.doorbetalingen = [];
-            document.querySelectorAll('.doorbetaling-row').forEach(row => {
-                const bedrag = parseFloat(row.querySelector('.bedrag-input').value) || 0;
-                const naam = row.querySelector('.naam-input').value.trim();
-                if (naam && bedrag > 0) {
-                    form.doorbetalingen.push({
-                        naam: naam,
-                        iban: row.querySelector('.iban-input').value.trim(),
-                        omschrijving: row.querySelector('.omschrijving-input').value.trim(),
-                        bic: row.querySelector('.bic-input').value.trim(),
-                        bedrag: bedrag,
-                        spoed: row.querySelector('.spoed-checkbox').checked,
-                        fileName: row.querySelector('.file-name-display').textContent || null
-                    });
-                }
-            });
-            logEvent(form.id, activeTask.taakId, `<span class="font-semibold">${currentUserDisplayName}</span> heeft de details van de taak bijgewerkt.`);
-        }
-
-        function validateTaskDetails() {
-            document.querySelectorAll('.invalid-input').forEach(el => el.classList.remove('invalid-input'));
-
-            const declaratieRows = document.querySelectorAll('.declaratie-row');
-            const doorbetalingRows = document.querySelectorAll('.doorbetaling-row');
-
-            if (declaratieRows.length === 0 && doorbetalingRows.length === 0) {
-                showNotification('Voeg minimaal één declaratie- of doorbetalingsregel toe.', 'error');
-                return false;
-            }
-
-            let isValid = true;
-
-            declaratieRows.forEach((row, index) => {
-                const omschrijvingInput = row.querySelector('.omschrijving-input');
-                const bedragInput = row.querySelector('.bedrag-input');
-
-                if (!omschrijvingInput.value.trim()) {
-                    omschrijvingInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-                if (!bedragInput.value || parseFloat(bedragInput.value) <= 0) {
-                    bedragInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-            });
-
-            doorbetalingRows.forEach((row, index) => {
-                const naamInput = row.querySelector('.naam-input');
-                const ibanInput = row.querySelector('.iban-input');
-                const omschrijvingInput = row.querySelector('.omschrijving-input');
-                const bedragInput = row.querySelector('.bedrag-input');
-
-                if (!naamInput.value.trim()) {
-                    naamInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-                 if (!ibanInput.value.trim()) {
-                    ibanInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-                 if (!omschrijvingInput.value.trim()) {
-                    omschrijvingInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-                if (!bedragInput.value || parseFloat(bedragInput.value) <= 0) {
-                    bedragInput.classList.add('invalid-input');
-                    isValid = false;
-                }
-            });
-
-            if (!isValid) {
-                showNotification('Vul alle verplichte velden in (gemarkeerd in rood).', 'error');
-            }
-
-            return isValid;
-        }
-
-        // **NIEUWE FUNCTIES**: Voor de pauze herinnering
-        const breakMessages = [
-            "Psst, Ine! Je bureaustoel meldt dat hij je even wil missen. Tijd om de benen te strekken!",
-            "Je ogen hebben genoeg pixels gezien. Trakteer ze op een korte wandeling. De app wacht wel.",
-            "Alarm! Cooper voelt zich eenzaam. Een perfect excuus voor een korte pauze, vind je niet?",
-            "Tijd voor een frisse neus! Een klein rondje doet wonderen. Tot zo!"
-        ];
-        let breakMessageIndex = 0;
-        let breakInterval;
-
-        function showBreakReminder() {
-            const message = breakMessages[breakMessageIndex];
-            document.getElementById('break-reminder-message').textContent = message;
-            openModal(modals.breakReminder);
-            breakMessageIndex = (breakMessageIndex + 1) % breakMessages.length; // Ga naar de volgende, of terug naar start
-        }
-
-        function setupBreakReminder() {
-            showBreakReminder(); // Toon direct bij het openen
-            breakInterval = setInterval(showBreakReminder, 15 * 60 * 1000); // Herhaal elke 15 minuten
-        }
-
-
-        // --- EVENT LISTENERS ---
-        function setupEventListeners() {
-            document.body.addEventListener('click', function(e) {
-                const target = e.target;
-                
-                if (target.id === 'btn-go-to-new-form') {
-                    const dateInput = document.getElementById('transactiedatum');
-                    if(dateInput) dateInput.value = lastUsedDate;
-                    showPage(pages.newForm);
-                }
-                 if (target.id === 'btn-go-to-reports') {
-                     showPage(pages.report);
-                 }
-                if (target.closest('.btn-back-to-dashboard')) { e.preventDefault(); resetAndShowPage(pages.dashboard); }
-                if (target.id === 'btn-save-form') saveNewForm();
-                if (target.id === 'btn-open-modal') openModal(modals.addTask);
-                if (target.id === 'btn-close-modal') closeModal(modals.addTask);
-                if (target.id === 'btn-close-break-reminder') closeModal(modals.breakReminder); // **NIEUW**
-                if (target.id === 'btn-add-task') addTask();
-
-                const taskCard = target.closest('.task-card, .completed-task-item');
-                if (taskCard) {
-                    const { form, taak } = findTask(taskCard.dataset.formId, taskCard.dataset.taakId);
-                    if (form && taak) {
-                        populateTaskView(form, taak);
-                        showPage(pages.taskView);
-                    }
-                }
-                
-                if (target.id === 'btn-add-comment') {
-                    const input = document.getElementById('new-comment-input');
-                    if (input && input.value.trim() && activeTask) {
-                        const { form } = findTask(activeTask.formId, activeTask.taakId);
-                        const message = `<span class="font-semibold">${currentUserDisplayName}:</span> ${input.value.trim()}`;
-                        logEvent(form.id, activeTask.taakId, message, 'comment');
-                        populateTaskView(form, findTask(activeTask.formId, activeTask.taakId).taak); // Refresh view
-                        input.value = '';
-                    }
-                }
-                
-                if (target.id === 'btn-complete-task') {
-                    if (!activeTask) return;
-                    if (validateTaskDetails()) {
-                        const { form, taak } = findTask(activeTask.formId, activeTask.taakId);
-                        if (taak) {
-                            saveTaskDetails(form);
-                            taak.status = 'completed';
-                            logEvent(form.id, taak.id, `<span class="font-semibold">${currentUserDisplayName}</span> heeft de taak afgerond.`);
-                            resetAndShowPage(pages.dashboard);
-                        }
-                    }
-                }
-                
-                if (target.id === 'btn-request-takeover') {
-                    if (!activeTask) return;
-                    const { form, taak } = findTask(activeTask.formId, activeTask.taakId);
-                    if (form && taak) {
-                        const newRequest = {
-                            id: `req_${Date.now()}`,
-                            formId: form.id,
-                            taakId: taak.id,
-                            requestedBy: currentUserDisplayName,
-                            originalOwner: taak.collega,
-                            requestedAt: new Date(),
-                            status: 'pending'
-                        };
-                        localDatabase.takeoverRequests.push(newRequest);
-                        logEvent(form.id, taak.id, `<span class="font-semibold">${currentUserDisplayName}</span> heeft verzocht de taak over te nemen van <span class="font-semibold">${taak.collega}</span>.`);
-                        showNotification('Overnameverzoek verzonden.', 'success');
-                        populateTaskView(form, taak);
-                    }
-                }
-
-                const approveBtn = target.closest('.btn-approve-takeover');
-                if (approveBtn) {
-                    const requestId = approveBtn.dataset.requestId;
-                    const request = localDatabase.takeoverRequests.find(r => r.id === requestId);
-                    if (request) {
-                        const { form, taak } = findTask(request.formId, request.taakId);
-                        if (form && taak) {
-                            taak.collega = request.requestedBy;
-                            request.status = 'approved';
-                            logEvent(form.id, taak.id, `Overnameverzoek goedgekeurd. Taak is nu toegewezen aan <span class="font-semibold">${request.requestedBy}</span>.`);
-                            showNotification('Verzoek goedgekeurd.', 'success');
-                            renderDashboard();
-                        }
-                    }
-                }
-
-                const rejectBtn = target.closest('.btn-reject-takeover');
-                if (rejectBtn) {
-                    const requestId = rejectBtn.dataset.requestId;
-                    const request = localDatabase.takeoverRequests.find(r => r.id === requestId);
-                    if (request) {
-                        request.status = 'rejected';
-                        const { form, taak } = findTask(request.formId, request.taakId);
-                        logEvent(form.id, taak.id, `Overnameverzoek afgewezen.`);
-                        showNotification('Verzoek afgewezen.', 'info');
-                        renderDashboard();
-                    }
-                }
-
-                if (target.id === 'btn-request-reopen') {
-                    if (!activeTask) return;
-                    const { form, taak } = findTask(activeTask.formId, activeTask.taakId);
-                     if (form && taak) {
-                        const newRequest = {
-                            id: `req_reopen_${Date.now()}`,
-                            formId: form.id,
-                            taakId: taak.id,
-                            requestedBy: currentUserDisplayName,
-                            requestedAt: new Date(),
-                            status: 'pending'
-                        };
-                        localDatabase.reopenRequests.push(newRequest);
-                        logEvent(form.id, taak.id, `<span class="font-semibold">${currentUserDisplayName}</span> heeft verzocht de taak te heropenen.`);
-                        showNotification('Verzoek tot heropening verzonden.', 'success');
-                        populateTaskView(form, taak);
-                    }
-                }
-
-                const approveReopenBtn = target.closest('.btn-approve-reopen');
-                if (approveReopenBtn) {
-                    const requestId = approveReopenBtn.dataset.requestId;
-                    const request = localDatabase.reopenRequests.find(r => r.id === requestId);
-                    if (request) {
-                        const { form, taak } = findTask(request.formId, request.taakId);
-                        if (form && taak) {
-                            taak.status = 'open';
-                            request.status = 'approved';
-                            logEvent(form.id, taak.id, `Verzoek tot heropening goedgekeurd door <span class="font-semibold">${currentUserDisplayName}</span>.`);
-                            showNotification('Taak heropend.', 'success');
-                            renderDashboard();
-                        }
-                    }
-                }
-
-                const rejectReopenBtn = target.closest('.btn-reject-reopen');
-                if (rejectReopenBtn) {
-                    const requestId = rejectReopenBtn.dataset.requestId;
-                    const request = localDatabase.reopenRequests.find(r => r.id === requestId);
-                     if (request) {
-                        request.status = 'rejected';
-                        const { form, taak } = findTask(request.formId, request.taakId);
-                        logEvent(form.id, taak.id, `Verzoek tot heropening afgewezen.`);
-                        showNotification('Verzoek afgewezen.', 'info');
-                        renderDashboard();
-                    }
-                }
-
-
-                const removeBtn = target.closest('.btn-remove-task');
-                if (removeBtn) {
-                    takenBuffer.splice(removeBtn.dataset.index, 1);
-                    renderTaken();
-                }
-
-                if (target.id === 'btn-add-declaratie') addDeclaratieRow(null, false);
-                if (target.id === 'btn-add-credit') addDeclaratieRow(null, true);
-                if (target.id === 'btn-add-doorbetaling') addDoorbetalingRow();
-                if (target.closest('.btn-remove-row')) {
-                    target.closest('.detail-row').remove();
-                    updateTotals();
-                }
-
-                const uploadBtn = target.closest('.btn-upload-file');
-                if (uploadBtn) {
-                    uploadBtn.nextElementSibling.click(); 
-                }
-            });
-            
-            document.querySelectorAll('.rekening-input').forEach(input => {
-                input.addEventListener('input', (e) => {
-                    if (e.target.value) {
-                        document.querySelectorAll('.rekening-input').forEach(otherInput => {
-                            if (otherInput !== e.target) {
-                                otherInput.value = '';
-                            }
-                        });
-                    }
-                });
-            });
-
-            document.getElementById('app-container').addEventListener('input', (e) => {
-                 if (e.target.closest('#task-interaction-section')) {
-                    if (e.target.classList.contains('bedrag-input') || e.target.classList.contains('spoed-checkbox')) {
-                        updateTotals();
-                    }
-                 }
-            });
-
-            document.getElementById('app-container').addEventListener('change', (e) => {
-                if (e.target.classList.contains('file-input')) {
-                    const fileNameDisplay = e.target.nextElementSibling;
-                    if (e.target.files.length > 0) {
-                        fileNameDisplay.textContent = e.target.files[0].name;
-                    } else {
-                        fileNameDisplay.textContent = '';
-                    }
-                }
-            });
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
