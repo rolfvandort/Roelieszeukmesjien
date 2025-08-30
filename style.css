@@ -739,6 +739,6 @@ body {
 }
 
 .header-logo img {
-    height: 80px; /* Pas dit eventueel aan naar de gewenste hoogte */
-    width: max;
+    height: 100px; /* Pas dit eventueel aan naar de gewenste hoogte */
+    width: auto;
 }
