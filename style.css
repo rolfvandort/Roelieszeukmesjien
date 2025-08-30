@@ -731,3 +731,14 @@ body {
     .dashboard-card { box-shadow: none; border: 1px solid #000; }
     .result-item { break-inside: avoid; }
 }
+/* --- Styling voor Header Logo --- */
+.header-logo {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header-logo img {
+    height: 40px; /* Pas dit eventueel aan naar de gewenste hoogte */
+    width: auto;
+}
