@@ -3,270 +3,262 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Roelies Zeukmesjien</title>
+    <title>De Zeukmesjien</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <!-- Header -->
     <div class="header-bar">
-        <div class="header-content">
-            <div class="logo">
-                ⚖️ Roelies Zeukmesjien
-            </div>
-            <div class="user-info">
-                <strong>Raoul van Dort</strong>
-                <div class="location">Welcome to Roelieverse..</div>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <span>🔎</span>
+                    <span>Roelies Zeukmesjien</span>
+                </div>
+                <div class="user-info">
+                    <strong>Raoul van Dort</strong>
+                    <div class="location">Welcome to Roelieverse..</div>
+                </div>
             </div>
         </div>
     </div>
 
+    <!-- Main Content -->
     <div class="container">
         <div class="main-content-grid">
-            <!-- Main Content -->
-            <div class="main-content">
-                <!-- Jurisprudence Card -->
-                <div class="dashboard-card" id="jurisprudenceCard">
-                    <div class="card-header">
-                        <h2>⚖️ Jurisprudentie Zoeker</h2>
+            <!-- Links: Jurisprudentie Zoeker -->
+            <div class="dashboard-card" id="jurisprudenceCard">
+                <div class="card-header">
+                    <h2>Jurisprudentie Zoeker</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Search Bar -->
+                    <div class="quick-search-section">
+                        <div class="search-input-container">
+                            <input type="text" id="quickSearchInput" placeholder="Zoek op trefwoord, ECLI, zaaknummer..." class="quick-search-input">
+                            <button class="quick-search-button" id="quickSearchButton">
+                                <span>🔍</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="card-body">
-                        <!-- Quick Search -->
-                        <div class="quick-search-section">
-                            <div class="search-input-container">
-                                <input type="text" id="quickSearchInput" class="quick-search-input" placeholder="Voer zoekterm in (optioneel)...">
-                                <button id="quickSearchButton" class="quick-search-button">🔍</button>
-                            </div>
-                        </div>
 
-                        <!-- Filter Controls -->
-                        <div class="filter-toggle-container">
-                            <button id="showFiltersButton" class="primary-button">
-                                <span id="filterToggleIcon">▼</span> Geavanceerd zoeken
-                            </button>
-                            <button id="resetFiltersButton" class="reset-button" style="display: none;">
-                                🗑️ Filters wissen
-                            </button>
-                        </div>
+                    <!-- Filter Toggle -->
+                    <div class="filter-toggle-container">
+                        <button class="tertiary-button" id="showFiltersButton">
+                            <span id="filterToggleIcon">▼</span> Geavanceerd zoeken
+                        </button>
+                        <button class="reset-button" id="resetFiltersButton" style="display: none;">
+                            Filters wissen
+                        </button>
+                    </div>
 
-                        <!-- API Filters (Initially Hidden) -->
-                        <div id="apiFilters" class="filters-section" style="display: none;">
-                            <div class="filter-section">
-                                <h3>📋 Basis Filters</h3>
-                                <div class="basic-filter-grid">
-                                    <!-- Rechtsgebied -->
-                                    <div class="filter-group">
-                                        <label for="subject">Rechtsgebied</label>
-                                        <select id="subject" class="filter-input">
-                                            <option value="">-- Alle rechtsgebieden --</option>
-                                        </select>
-                                    </div>
+                    <!-- Filters Section -->
+                    <div id="apiFilters" class="filters-section" style="display: none;">
+                        <!-- Basis Filters -->
+                        <div class="filter-section">
+                            <h3>Basis Filters</h3>
+                            <div class="basic-filter-grid">
+                                <!-- Rechtsgebied -->
+                                <div class="filter-group">
+                                    <label for="subject">Rechtsgebied</label>
+                                    <select id="subject" class="filter-input">
+                                        <option value="">-- Alle rechtsgebieden --</option>
+                                    </select>
+                                </div>
 
-                                    <!-- Document Type -->
-                                    <div class="filter-group">
-                                        <label>Type Document</label>
-                                        <div class="radio-group">
-                                            <label class="radio-option">
-                                                <input type="radio" name="documentType" value="" checked>
-                                                <div class="radio-custom"></div>
-                                                Alle
-                                            </label>
-                                            <label class="radio-option">
-                                                <input type="radio" name="documentType" value="Uitspraak">
-                                                <div class="radio-custom"></div>
-                                                Uitspraak
-                                            </label>
-                                            <label class="radio-option">
-                                                <input type="radio" name="documentType" value="Conclusie">
-                                                <div class="radio-custom"></div>
-                                                Conclusie
-                                            </label>
-                                        </div>
-                                    </div>
-
-                                    <!-- Periode -->
-                                    <div class="filter-group">
-                                        <label for="periodPreset">Periode</label>
-                                        <select id="periodPreset" class="filter-input">
-                                            <option value="">-- Selecteer periode --</option>
-                                            <option value="last-month">Laatste maand</option>
-                                            <option value="last-3-months">Laatste 3 maanden</option>
-                                            <option value="last-6-months">Laatste 6 maanden</option>
-                                            <option value="this-year">Dit jaar</option>
-                                            <option value="last-year">Vorig jaar</option>
-                                            <option value="custom">Aangepaste periode...</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Sortering -->
-                                    <div class="filter-group">
-                                        <label for="sortOrder">Sortering</label>
-                                        <select id="sortOrder" class="filter-input">
-                                            <option value="DESC">Nieuwste eerst</option>
-                                            <option value="ASC">Oudste eerst</option>
-                                        </select>
+                                <!-- Type Document - Radio Buttons -->
+                                <div class="filter-group">
+                                    <label>Type Document</label>
+                                    <div class="radio-group">
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="" checked>
+                                            <span class="radio-custom"></span>
+                                            Alle
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="Uitspraak">
+                                            <span class="radio-custom"></span>
+                                            Uitspraak
+                                        </label>
+                                        <label class="radio-option">
+                                            <input type="radio" name="documentType" value="Conclusie">
+                                            <span class="radio-custom"></span>
+                                            Conclusie
+                                        </label>
                                     </div>
                                 </div>
 
+                                <!-- Periode Presets -->
+                                <div class="filter-group">
+                                    <label for="periodPreset">Periode</label>
+                                    <select id="periodPreset" class="filter-input">
+                                        <option value="">-- Selecteer periode --</option>
+                                        <option value="last-month">Laatste maand</option>
+                                        <option value="last-3-months">Laatste 3 maanden</option>
+                                        <option value="last-6-months">Laatste 6 maanden</option>
+                                        <option value="this-year">Dit jaar</option>
+                                        <option value="last-year">Vorig jaar</option>
+                                        <option value="custom">Aangepaste periode...</option>
+                                    </select>
+                                </div>
+
+                                <!-- Sortering -->
+                                <div class="filter-group">
+                                    <label for="sortOrder">Sortering</label>
+                                    <select id="sortOrder" class="filter-input">
+                                        <option value="DESC">Nieuwste eerst</option>
+                                        <option value="ASC">Oudste eerst</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Geavanceerde Filters -->
+                        <div class="filter-section advanced-section" id="advancedFilters" style="display: none;">
+                            <h3> Geavanceerde Filters</h3>
+                            <div class="advanced-filter-grid">
                                 <!-- Custom Date Range -->
-                                <div id="customDateRange" class="date-range-group" style="display: none;">
+                                <div class="filter-group date-range-group" id="customDateRange" style="display: none;">
+                                    <label>Uitspraakdatum periode</label>
                                     <div class="date-inputs">
-                                        <div class="filter-group">
-                                            <label for="dateFrom">Uitspraakdatum periode</label>
-                                            <input type="date" id="dateFrom" class="filter-input">
-                                        </div>
-                                        <div class="date-separator">tot</div>
-                                        <div class="filter-group">
-                                            <input type="date" id="dateTo" class="filter-input">
-                                        </div>
+                                        <input type="date" id="dateFrom" class="filter-input" placeholder="Van datum">
+                                        <span class="date-separator">tot</span>
+                                        <input type="date" id="dateTo" class="filter-input" placeholder="Tot datum">
+                                    </div>
+                                </div>
+
+                                <!-- Instantie met autocomplete -->
+                                <div class="filter-group autocomplete-container">
+                                    <label for="creator">Instantie</label>
+                                    <div class="input-with-clear">
+                                        <input type="text" id="creator" class="filter-input" placeholder="Begin met typen...">
+                                        <button type="button" class="clear-input" id="clearCreator" style="display: none;">✕</button>
+                                    </div>
+                                    <div id="creatorSuggestions" class="autocomplete-suggestions"></div>
+                                </div>
+
+                                <!-- Procedure -->
+                                <div class="filter-group">
+                                    <label for="procedure">Procedure</label>
+                                    <select id="procedure" class="filter-input">
+                                        <option value="">-- Alle procedures --</option>
+                                    </select>
+                                </div>
+
+                                <!-- Wijzigingsdatum -->
+                                <div class="filter-group">
+                                    <label>Wijzigingsdatum periode</label>
+                                    <div class="date-inputs">
+                                        <input type="date" id="modifiedFrom" class="filter-input" placeholder="Van datum">
+                                        <span class="date-separator">tot</span>
+                                        <input type="date" id="modifiedTo" class="filter-input" placeholder="Tot datum">
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Advanced Filters -->
-                            <div class="filter-section">
-                                <h3>🔧 Geavanceerde Filters</h3>
-                                <div class="advanced-filter-grid">
-                                    <!-- Instantie -->
-                                    <div class="filter-group">
-                                        <label for="creator">Instantie</label>
-                                        <div class="autocomplete-container">
-                                            <div class="input-with-clear">
-                                                <input type="text" id="creator" class="filter-input" placeholder="Type om te zoeken...">
-                                                <button id="clearCreator" class="clear-input" style="display: none;">×</button>
-                                            </div>
-                                            <div id="creatorSuggestions" class="autocomplete-suggestions"></div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Procedure -->
-                                    <div class="filter-group">
-                                        <label for="procedure">Procedure</label>
-                                        <select id="procedure" class="filter-input">
-                                            <option value="">-- Alle procedures --</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <!-- Advanced section -->
-                                <div id="advancedFilters" class="advanced-section" style="display: none;">
-                                    <div class="advanced-filter-grid">
-                                        <!-- Modified Date Range -->
-                                        <div class="date-range-group">
-                                            <div class="date-inputs">
-                                                <div class="filter-group">
-                                                    <label for="modifiedFrom">Wijzigingsdatum periode</label>
-                                                    <input type="date" id="modifiedFrom" class="filter-input">
-                                                </div>
-                                                <div class="date-separator">tot</div>
-                                                <div class="filter-group">
-                                                    <input type="date" id="modifiedTo" class="filter-input">
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="advanced-toggle">
-                                    <button id="toggleAdvanced" class="tertiary-button">
-                                        <span id="advancedToggleIcon">▼</span> Meer opties
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Search Button -->
-                            <div class="action-buttons">
-                                <button id="apiSearchButton" class="primary-button">
-                                    <span class="button-icon">🔍</span>
-                                    Zoek uitspraken
+                            <!-- Advanced Toggle Button -->
+                            <div class="advanced-toggle">
+                                <button class="tertiary-button" id="toggleAdvanced">
+                                    <span id="advancedToggleIcon">▼</span> Meer opties
                                 </button>
-                                <div class="button-subtext">Maximaal 1000 resultaten per zoekopdracht</div>
                             </div>
                         </div>
 
-                        <!-- Loading Indicator -->
-                        <div id="loadingIndicator" class="loading-indicator" style="display: none;">
-                            <div class="spinner"></div>
-                            Zoeken in database...
+                        <!-- Action Buttons -->
+                        <div class="action-buttons">
+                            <button class="primary-button" id="apiSearchButton">
+                                <span class="button-icon"></span> Zoek uitspraken
+                            </button>
+                            <div class="button-subtext">Maximaal 1000 resultaten per zoekopdracht</div>
                         </div>
+                    </div>
 
-                        <!-- Smart Search Section -->
-                        <div id="smartSearchSection" class="smart-search-section hidden">
-                            <h3>🔍 Verfijn resultaten</h3>
+                    <!-- Status en Loading -->
+                    <div id="jurisprudenceStatus" class="status-message"></div>
+                    <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                        <div class="spinner"></div>
+                        <span>Zoeken in database...</span>
+                    </div>
+
+                    <!-- Slimme Filter Sectie -->
+                    <div id="smartSearchSection" class="smart-search-section hidden">
+                        <hr class="separator">
+                        <div class="filter-section">
+                            <h3>Verfijn resultaten</h3>
                             <div class="smart-search-controls">
-                                <div class="search-input-container">
-                                    <input type="text" id="smartSearchInput" class="quick-search-input" placeholder="Zoek binnen resultaten">
-                                    <button id="smartFilterButton" class="quick-search-button">Filter</button>
+                                <div class="filter-group">
+                                    <label for="smartSearchInput">Zoek binnen resultaten</label>
+                                    <div class="search-input-container">
+                                        <input type="text" id="smartSearchInput" placeholder="Zoek op trefwoord..." class="filter-input">
+                                        <button class="secondary-button" id="smartFilterButton">Filter</button>
+                                    </div>
                                 </div>
                                 <div class="filter-group">
                                     <label>Zoek in:</label>
                                     <div class="checkbox-group">
                                         <label class="checkbox-option">
                                             <input type="checkbox" name="searchIn" value="title" checked>
-                                            <div class="checkmark"></div>
+                                            <span class="checkmark"></span>
                                             Titel
                                         </label>
                                         <label class="checkbox-option">
                                             <input type="checkbox" name="searchIn" value="summary" checked>
-                                            <div class="checkmark"></div>
+                                            <span class="checkmark"></span>
                                             Samenvatting
                                         </label>
                                         <label class="checkbox-option">
                                             <input type="checkbox" name="searchIn" value="ecli">
-                                            <div class="checkmark"></div>
+                                            <span class="checkmark"></span>
                                             ECLI
                                         </label>
                                         <label class="checkbox-option">
                                             <input type="checkbox" name="searchIn" value="zaaknummer">
-                                            <div class="checkmark"></div>
+                                            <span class="checkmark"></span>
                                             Zaaknummer
                                         </label>
                                     </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Results -->
-                        <div id="jurisprudenceStatus" class="status-message info" style="display: none;"></div>
-                        <div id="jurisprudenceResults" class="results-container"></div>
-                        <div id="jurisprudencePagination" class="pagination-container"></div>
                     </div>
+
+                    <!-- Resultaten -->
+                    <div id="jurisprudenceResults" class="results-container"></div>
+                    <div id="jurisprudencePagination" class="pagination-container"></div>
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            <!-- Rechts: Sidebar -->
             <div class="sidebar">
-                <!-- Pinned Item -->
-                <div id="pinnedItemContainer" class="dashboard-card hidden">
+                <!-- Gepind Item -->
+                <div class="dashboard-card" id="pinnedItemContainer" style="display: none;">
                     <div class="card-header">
                         <h3>📌 Gepind Dossier</h3>
                     </div>
                     <div class="card-body">
                         <div id="pinnedItemContent"></div>
-                    </div>
-                </div>
-
-                <!-- Related Searches (placeholder) -->
-                <div class="dashboard-card">
-                    <div class="card-header">
-                        <h3>🔗 Gerelateerde zoekopdrachten:</h3>
-                    </div>
-                    <div class="card-body">
-                        <p class="text-muted">Zoekopdrachten worden hier weergegeven na het uitvoeren van een zoekopdracht.</p>
+                        <div class="search-triggers">
+                            <h5>Gerelateerde zoekopdrachten:</h5>
+                            <!-- Dynamisch gegenereerd -->
+                        </div>
                     </div>
                 </div>
 
                 <!-- Wettenbank Zoeker -->
                 <div class="dashboard-card">
                     <div class="card-header">
-                        <h3>📚 Wettenbank Zoeker</h3>
+                        <h3> Wettenbank Zoeker</h3>
                     </div>
                     <div class="card-body">
-                        <div class="search-input-container">
-                            <input type="text" id="wettenbankKeyword" class="quick-search-input" placeholder="Zoeken op trefwoord:">
-                            <button id="wettenbankSearchButton" class="quick-search-button">Zoek in Wettenbank</button>
+                        <div class="filter-group">
+                            <label for="wettenbankKeyword">Zoeken op trefwoord:</label>
+                            <div class="search-input-container">
+                                <input type="text" id="wettenbankKeyword" placeholder="Trefwoord" class="filter-input">
+                                <button class="primary-button" id="wettenbankSearchButton">Zoek in Wettenbank</button>
+                            </div>
                         </div>
-                        <div id="wettenbankStatus" class="status-message info" style="display: none;"></div>
-                        <div id="wettenbankResults" class="wettenbank-results"></div>
+                        <div id="wettenbankStatus" class="status-message"></div>
+                        <div id="wettenbankResults" class="results-container"></div>
                     </div>
                 </div>
             </div>
