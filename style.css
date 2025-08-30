@@ -740,5 +740,5 @@ body {
 
 .header-logo img {
     height: 80px; /* Pas dit eventueel aan naar de gewenste hoogte */
-    width: 480px;
+    width: max;
 }
