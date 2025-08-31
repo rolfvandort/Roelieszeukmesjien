@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- PROXY-INSTELLING ---
     const PROXY_URL = 'https://corsproxy.io/?';
-    const MAX_JURISPRUDENCE_RESULTS = 10000;
+    const MAX_JURISPRUDENCE_RESULTS = 5000;
 
     // --- DATA (direct in de code voor betrouwbaarheid) ---
     const rechtsgebieden = [
@@ -63,10 +63,6 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: "Raad van State", id: "http://standaarden.overheid.nl/owms/terms/Raad_van_State" },
         { name: "Centrale Raad van Beroep", id: "http://standaarden.overheid.nl/owms/terms/Centrale_Raad_van_Beroep" },
         { name: "College van Beroep voor het bedrijfsleven", id: "http://standaarden.overheid.nl/owms/terms/College_van_Beroep_voor_het_bedrijfsleven" },
-        { name: "Gerechtshof Amsterdam", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Amsterdam" },
-        { name: "Gerechtshof Arnhem-Leeuwarden", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Arnhem-Leeuwarden" },
-        { name: "Gerechtshof Den Haag", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Den_Haag" },
-        { name: "Gerechtshof 's-Hertogenbosch", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_'s-Hertogenbosch" },
         { name: "Rechtbank Amsterdam", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Amsterdam" },
         { name: "Rechtbank Den Haag", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Den_Haag" },
         { name: "Rechtbank Gelderland", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Gelderland" },
@@ -78,9 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: "Rechtbank Overijssel", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Overijssel" },
         { name: "Rechtbank Rotterdam", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Rotterdam" },
         { name: "Rechtbank Zeeland-West-Brabant", id: "http://standaarden.overheid.nl/owms/terms/Rechtbank_Zeeland-West-Brabant" },
-        { name: "Parket bij de Hoge Raad", id: "http://standaarden.overheid.nl/owms/terms/Parket_bij_de_Hoge_Raad"},
-        { name: "Gerecht in eerste aanleg van Bonaire, Sint Eustatius en Saba", id: "http://psi.rechtspraak.nl/GEABES" },
-        { name: "Gemeenschappelijk Hof van Justitie van Aruba, Curaçao, Sint Maarten en van Bonaire, Sint Eustatius en Saba", id: "http://psi.rechtspraak.nl/GHACSMBES" }
+        { name: "Gerechtshof Amsterdam", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Amsterdam" },
+        { name: "Gerechtshof Arnhem-Leeuwarden", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Arnhem-Leeuwarden" },
+        { name: "Gerechtshof Den Haag", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_Den_Haag" },
+        { name: "Gerechtshof 's-Hertogenbosch", id: "http://standaarden.overheid.nl/owms/terms/Gerechtshof_'s-Hertogenbosch" }
     ];
 
     // --- DOM ELEMENTEN ---
@@ -441,7 +438,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const parseJurisprudenceEntry = (entry) => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
-    
+        
         // Gewijzigd-datum (dcterms:modified / updated)
         const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
         const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
@@ -449,33 +446,45 @@ document.addEventListener('DOMContentLoaded', () => {
         // Publicatiedatum (dcterms:issued)
         const issuedDateRaw = entry.querySelector('issued')?.textContent;
         const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
-    
+        
         // Uitspraakdatum (dcterms:date)
-        const decisionDateRaw = entry.querySelector('date')?.textContent;
-        const decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
-    
+        const decisionDateRaw = entry.querySelector('date')?.textContent; 
+        let decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
+
         let instantie = 'N/A';
         let zaaknummer = 'N/A';
-    
-        // Probeer eerst expliciet het zaaknummer te parsen
-        const zaaknummerTag = entry.querySelector('zaaknummer');
-        if (zaaknummerTag) {
-            zaaknummer = zaaknummerTag.textContent;
-        } else {
-            // Fallback: Parse from title if specific tags are missing
-            const parts = fullTitle.split(',').map(p => p.trim());
-            if (parts.length >= 2) {
-                instantie = parts[1];
+        
+        // Fallback: Parse from title if specific tags are missing
+        const parts = fullTitle.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+            instantie = parts[1];
+        }
+        if (parts.length >= 3) {
+            const dateZaakPart = parts[2];
+
+            // Attempt to parse date from title ONLY if dcterms:date is missing
+            if (!decisionDateObject) {
+                 const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
+                 if (dateMatch) {
+                    const parsedDate = new Date(dateMatch[1]);
+                    if (!isNaN(parsedDate)) {
+                        decisionDateObject = parsedDate;
+                    }
+                 }
             }
-            if (parts.length >= 3) {
-                const dateZaakPart = parts[2];
-                // Verwijder de datum (JJJJ-MM-DD of DD-MM-JJJJ) en trim het resultaat
-                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})/, '').trim();
-                 // Verwijder eventuele voorlooptekens zoals '/'
-                if (zaaknummer.startsWith('/')) {
-                    zaaknummer = zaaknummer.substring(1).trim();
-                }
+            
+            // Attempt to parse zaaknummer from title
+            const zaakSplit = dateZaakPart.split('/');
+            if (zaakSplit.length > 1) {
+                zaaknummer = zaakSplit.slice(1).join('/').trim();
+            } else {
+                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
             }
+        }
+
+        // Fallback for sorting date object
+        if (!decisionDateObject) {
+            decisionDateObject = issuedDate || lastUpdatedDate;
         }
     
         return {
@@ -486,12 +495,11 @@ document.addEventListener('DOMContentLoaded', () => {
             zaaknummer,
             summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
             link: entry.querySelector('link')?.getAttribute('href') || '#',
-            dateObject: decisionDateObject, // This is the primary date for sorting
+            dateObject: decisionDateObject,
             publicatiedatum: issuedDate ? issuedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
             gewijzigd: lastUpdatedDate ? lastUpdatedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar'
         };
     };
-    
     
     const sortAndRenderJurisprudence = () => {
         // First, apply smart search filter to get the current relevant subset
