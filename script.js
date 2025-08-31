@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const parseJurisprudenceEntry = (entry) => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
-        
+    
         // Gewijzigd-datum (dcterms:modified / updated)
         const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
         const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
@@ -449,32 +449,28 @@ document.addEventListener('DOMContentLoaded', () => {
         // Publicatiedatum (dcterms:issued)
         const issuedDateRaw = entry.querySelector('issued')?.textContent;
         const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
-        
+    
         // Uitspraakdatum (dcterms:date)
-        const decisionDateRaw = entry.querySelector('date')?.textContent; 
+        const decisionDateRaw = entry.querySelector('date')?.textContent;
         const decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
-
+    
         let instantie = 'N/A';
         let zaaknummer = 'N/A';
-        
+    
         // Probeer eerst expliciet het zaaknummer te parsen
         const zaaknummerTag = entry.querySelector('zaaknummer');
         if (zaaknummerTag) {
             zaaknummer = zaaknummerTag.textContent;
-        }
-
-        // Fallback: Parse from title if specific tags are missing
-        const parts = fullTitle.split(',').map(p => p.trim());
-        if (parts.length >= 2) {
-            instantie = parts[1];
-        }
-        if (parts.length >= 3 && zaaknummer === 'N/A') {
-            const dateZaakPart = parts[2];
-            const zaakSplit = dateZaakPart.split('/');
-            if (zaakSplit.length > 1) {
-                zaaknummer = zaakSplit.slice(1).join('/').trim();
-            } else {
-                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
+        } else {
+            // Fallback: Parse from title if specific tags are missing
+            const parts = fullTitle.split(',').map(p => p.trim());
+            if (parts.length >= 2) {
+                instantie = parts[1];
+            }
+            if (parts.length >= 3) {
+                const dateZaakPart = parts[2];
+                // Verwijder de datum (JJJJ-MM-DD of DD-MM-JJJJ) en trim het resultaat
+                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2}|\d{2}-\d{2}-\d{4})/, '').trim();
             }
         }
     
@@ -491,6 +487,7 @@ document.addEventListener('DOMContentLoaded', () => {
             gewijzigd: lastUpdatedDate ? lastUpdatedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar'
         };
     };
+    
     
     const sortAndRenderJurisprudence = () => {
         // First, apply smart search filter to get the current relevant subset
