@@ -439,7 +439,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
         
-        // Gewijzigd-datum (dcterms:modified / updated)
+        // Gewijzigd-datum (dcterms:modified)
         const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
         const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
     
