@@ -285,13 +285,20 @@ document.addEventListener('DOMContentLoaded', () => {
             if (xmlDoc.getElementsByTagName("parsererror").length) throw new Error("Fout bij het verwerken van de XML-data.");
             
             const entries = xmlDoc.getElementsByTagName('entry');
-            jurisprudenceMasterResults = Array.from(entries).map(entry => ({
-                title: entry.querySelector('title')?.textContent || 'Geen titel',
-                ecli: entry.querySelector('id')?.textContent || '',
-                summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting.',
-                updated: new Date(entry.querySelector('updated')?.textContent),
-                zaaknummer: entry.querySelector('zaaknummer, \\:zaaknummer')?.textContent || 'Niet gevonden'
-            }));
+            jurisprudenceMasterResults = Array.from(entries).map(entry => {
+                const title = entry.querySelector('title')?.textContent || 'Geen titel';
+                // De uitspraakdatum is vaak onderdeel van de titel, bv: "... Rechtbank Amsterdam 2023-08-30"
+                const dateMatch = title.match(/(\d{4}-\d{2}-\d{2})$/);
+                const uitspraakdatum = dateMatch ? new Date(dateMatch[1]) : null;
+
+                return {
+                    title: title,
+                    ecli: entry.querySelector('id')?.textContent || '',
+                    summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting.',
+                    uitspraakdatum: uitspraakdatum, // Gebruik de geparste datum
+                    zaaknummer: entry.querySelector('zaaknummer, \\:zaaknummer')?.textContent || 'Niet gevonden'
+                };
+            });
 
             handleSmartSearch(true); 
 
@@ -489,11 +496,17 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = '';
         pageResults.forEach((item, index) => {
             const globalIndex = `jurisprudence-${startIndex + index}`;
+            const metaData = {
+                "ECLI": item.ecli,
+                "Zaaknummer": item.zaaknummer,
+                "Datum Uitspraak": item.uitspraakdatum ? item.uitspraakdatum.toLocaleDateString('nl-NL') : 'Onbekend'
+            };
             html += createResultItemHTML(
-                'jurisprudence', item.title,
+                'jurisprudence', 
+                item.title,
                 `https://uitspraken.rechtspraak.nl/inziendocument?id=${encodeURIComponent(item.ecli)}`,
                 item.summary,
-                { "ECLI": item.ecli, "Zaaknummer": item.zaaknummer, "Bijgewerkt": item.updated.toLocaleDateString('nl-NL') },
+                metaData,
                 globalIndex
             );
         });
