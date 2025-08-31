@@ -692,8 +692,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     "ECLI": highlightText(item.ecli, keyword),
                     "Instantie": item.instantie,
-                    "Zaaknummer(s)": item.zaaknummer,
-                    "Uitspraakdatum": item.uitspraakdatum,
+                    "Uitspraakdatum": item.zaaknummer,
+                    "Zaaknummer(s)": item.uitspraakdatum,
                     "Publicatiedatum": item.publicatiedatum,
                     "Laatste update": item.gewijzigd
                 },
