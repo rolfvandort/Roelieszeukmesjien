@@ -15,11 +15,47 @@ document.addEventListener('DOMContentLoaded', () => {
         { name: 'Artikel 81 RO-zaken', id: 'http://psi.rechtspraak.nl/procedure#artikel81ROzaken' },
         { name: 'Bodemzaak', id: 'http://psi.rechtspraak.nl/procedure#bodemzaak' },
         { name: 'Cassatie', id: 'http://psi.rechtspraak.nl/procedure#cassatie' },
+        { name: 'Cassatie in het belang der wet', id: 'http://psi.rechtspraak.nl/procedure#cassatieInHetBelangDerWet' },
+        { name: 'Conservatoire maatregel', id: 'http://psi.rechtspraak.nl/procedure#conservatoireMaatregel' },
         { name: 'Eerste aanleg - enkelvoudig', id: 'http://psi.rechtspraak.nl/procedure#eersteAanlegEnkelvoudig' },
         { name: 'Eerste aanleg - meervoudig', id: 'http://psi.rechtspraak.nl/procedure#eersteAanlegMeervoudig' },
+        { name: 'Eerste en enige aanleg', id: 'http://psi.rechtspraak.nl/procedure#eersteEnEnigeAanleg' },
+        { name: 'Herziening', id: 'http://psi.rechtspraak.nl/procedure#herziening' },
         { name: 'Hoger beroep', id: 'http://psi.rechtspraak.nl/procedure#hogerBeroep' },
+        { name: 'Hoger beroep kort geding', id: 'http://psi.rechtspraak.nl/procedure#hogerBeroepKortGeding' },
         { name: 'Kort geding', id: 'http://psi.rechtspraak.nl/procedure#kortGeding' },
-        { name: 'Voorlopige voorziening', id: 'http://psi.rechtspraak.nl/procedure#voorlopigeVoorziening' }
+        { name: 'Mondelinge uitspraak', id: 'http://psi.rechtspraak.nl/procedure#mondelingeUitspraak' },
+        { name: 'Peek', id: 'http://psi.rechtspraak.nl/procedure#peek' },
+        { name: 'Prejudiciële beslissing', id: 'http://psi.rechtspraak.nl/procedure#prejudicieleBeslissing' },
+        { name: 'Prejudicieel verzoek', id: 'http://psi.rechtspraak.nl/procedure#prejudicieelVerzoek' },
+        { name: 'Prejudiciële spoedprocedure (PPU)', id: 'http://psi.rechtspraak.nl/procedure#prejudicieleSpoedprocedure(PPU)' },
+        { name: 'Proceskostenveroordeling', id: 'http://psi.rechtspraak.nl/procedure#proceskostenveroordeling' },
+        { name: 'Proces-verbaal', id: 'http://psi.rechtspraak.nl/procedure#procesverbaal' },
+        { name: 'Raadkamer', id: 'http://psi.rechtspraak.nl/procedure#raadkamer' },
+        { name: 'Rekestprocedure', id: 'http://psi.rechtspraak.nl/procedure#rekestprocedure' },
+        { name: 'Schadevergoedingsuitspraak', id: 'http://psi.rechtspraak.nl/procedure#schadevergoedingsuitspraak' },
+        { name: 'Tussenuitspraak bestuurlijke lus', id: 'http://psi.rechtspraak.nl/procedure#tussenuitspraakBestuurlijkeLus' },
+        { name: 'Uitspraak na prejudiciële beslissing', id: 'http://psi.rechtspraak.nl/procedure#uitspraakNaPrejudicieleBeslissing' },
+        { name: 'Vereenvoudigde behandeling', id: 'http://psi.rechtspraak.nl/procedure#vereenvoudigdeBehandeling' },
+        { name: 'Versnelde behandeling', id: 'http://psi.rechtspraak.nl/procedure#versneldeBehandeling' },
+        { name: 'Verstek', id: 'http://psi.rechtspraak.nl/procedure#verstek' },
+        { name: 'Verwijzing na Hoge Raad', id: 'http://psi.rechtspraak.nl/procedure#verwijzingNaHogeRaad' },
+        { name: 'Verzet', id: 'http://psi.rechtspraak.nl/procedure#verzet' },
+        { name: 'Voorlopige voorziening', id: 'http://psi.rechtspraak.nl/procedure#voorlopigeVoorziening' },
+        { name: 'Voorlopige voorziening+bodemzaak', id: 'http://psi.rechtspraak.nl/procedure#voorlopigeVoorzieningbodemzaak' },
+        { name: 'Wraking', id: 'http://psi.rechtspraak.nl/procedure#wraking' },
+        { name: 'Op tegenspraak', id: 'http://psi.rechtspraak.nl/procedure#opTegenspraak' },
+        { name: 'Belemmeringenwet Privaatrecht', id: 'http://psi.rechtspraak.nl/procedure#belemmeringenwetPrivaatrecht' },
+        { name: 'Artikel 80a RO-zaken', id: 'http://psi.rechtspraak.nl/procedure#artikel80aROzaken' },
+        { name: 'Beschikking', id: 'http://psi.rechtspraak.nl/procedure#beschikking' },
+        { name: 'Tussenbeschikking', id: 'http://psi.rechtspraak.nl/procedure#tussenbeschikking' },
+        { name: 'Herroeping', id: 'http://psi.rechtspraak.nl/procedure#herroeping' },
+        { name: 'Verschoning', id: 'http://psi.rechtspraak.nl/procedure#verschoning' },
+        { name: 'Tussenuitspraak', id: 'http://psi.rechtspraak.nl/procedure#tussenuitspraak' },
+        { name: 'Geheimhoudingsbeslissing', id: 'http://psi.rechtspraak.nl/procedure#geheimhoudingsbeslissing' },
+        { name: 'NCC', id: 'http://psi.rechtspraak.nl/procedure#NCC' },
+        { name: 'NCCA', id: 'http://psi.rechtspraak.nl/procedure#NCCA' },
+        { name: 'Beslissing RC', id: 'http://psi.rechtspraak.nl/procedure#beslissingRC' }
     ];
 
     const instanties = [
@@ -403,24 +439,30 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
         
+        // Gewijzigd-datum (dcterms:modified / updated)
         const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
         const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
     
+        // Publicatiedatum (dcterms:issued)
         const issuedDateRaw = entry.querySelector('issued')?.textContent;
         const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
         
+        // Uitspraakdatum (dcterms:date)
         const decisionDateRaw = entry.querySelector('date')?.textContent; 
         let decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
 
         let instantie = 'N/A';
         let zaaknummer = 'N/A';
-    
+        
+        // Fallback: Parse from title if specific tags are missing
         const parts = fullTitle.split(',').map(p => p.trim());
-    
-        if (parts.length >= 3) {
+        if (parts.length >= 2) {
             instantie = parts[1];
+        }
+        if (parts.length >= 3) {
             const dateZaakPart = parts[2];
 
+            // Attempt to parse date from title ONLY if dcterms:date is missing
             if (!decisionDateObject) {
                  const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
                  if (dateMatch) {
@@ -431,17 +473,16 @@ document.addEventListener('DOMContentLoaded', () => {
                  }
             }
             
+            // Attempt to parse zaaknummer from title
             const zaakSplit = dateZaakPart.split('/');
             if (zaakSplit.length > 1) {
                 zaaknummer = zaakSplit.slice(1).join('/').trim();
             } else {
                 zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
             }
-        } else if (parts.length === 2) {
-             instantie = parts[1];
         }
 
-        // Fallback voor uitspraakdatum als die nog steeds niet is gevonden
+        // Fallback for sorting date object
         if (!decisionDateObject) {
             decisionDateObject = issuedDate || lastUpdatedDate;
         }
@@ -450,7 +491,7 @@ document.addEventListener('DOMContentLoaded', () => {
             title: fullTitle,
             ecli,
             instantie,
-            uitspraakdatum: decisionDateObject ? decisionDateObject.toLocaleDateString('nl-NL') : 'N/A',
+            uitspraakdatum: decisionDateObject ? decisionDateObject.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
             zaaknummer,
             summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
             link: entry.querySelector('link')?.getAttribute('href') || '#',
@@ -651,10 +692,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 {
                     "ECLI": highlightText(item.ecli, keyword),
                     "Instantie": item.instantie,
+                    "Zaaknummer(s)": item.zaaknummer,
                     "Uitspraakdatum": item.uitspraakdatum,
                     "Publicatiedatum": item.publicatiedatum,
-                    "Laatste update": item.gewijzigd,
-                    "Zaaknummer(s)": item.zaaknummer,
+                    "Laatste update": item.gewijzigd
                 },
                 `jurisprudence-${globalIndex}`
             );
@@ -702,7 +743,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const createResultItemHTML = (type, title, link, content, meta, index) => {
         const metaHTML = Object.entries(meta)
-            .filter(([, value]) => value && value.trim() !== 'N/A' && value.trim() !== '')
+            .filter(([, value]) => value && value.trim() !== 'N/A' && value.trim() !== '' && value.trim() !== 'Niet beschikbaar')
             .map(([key, value]) => `<span><strong>${key}:</strong> ${value}</span>`).join('');
         
         const summaryNeedsToggle = content.length > 350;
