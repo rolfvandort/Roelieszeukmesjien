@@ -397,6 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
         const updatedDate = entry.querySelector('updated')?.textContent;
+        const publicatiedatum = new Date(updatedDate);
     
         let instantie = 'N/A';
         let uitspraakdatum = 'N/A';
@@ -411,7 +412,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
             if (dateMatch) {
                 dateObject = new Date(dateMatch[1]);
-                uitspraakdatum = dateObject.toLocaleDateString('nl-NL');
+                if (!isNaN(dateObject)) {
+                    uitspraakdatum = dateObject.toLocaleDateString('nl-NL');
+                } else {
+                    dateObject = null; // Invalide datum, reset
+                }
                 
                 const zaakSplit = dateZaakPart.split('/');
                 if (zaakSplit.length > 1) {
@@ -423,13 +428,19 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (parts.length === 2) {
              instantie = parts[1];
         }
+
+        // Fallback: Als dateObject niet uit de titel geparsed kon worden, gebruik publicatiedatum
+        if (!dateObject) {
+            dateObject = publicatiedatum;
+            uitspraakdatum = `(publicatie: ${publicatiedatum.toLocaleDateString('nl-NL')})`;
+        }
     
         return {
             title: fullTitle, ecli, instantie, uitspraakdatum, zaaknummer,
             summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
             link: entry.querySelector('link')?.getAttribute('href') || '#',
             dateObject: dateObject,
-            publicatiedatum: new Date(updatedDate)
+            publicatiedatum: publicatiedatum
         };
     };
 
@@ -462,24 +473,39 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const handleSortChange = () => {
         const sortValue = elements.sortOrder.value;
+        // API-based sorting for publication date
         if (sortValue === 'ASC' || sortValue === 'DESC') {
+            // Only trigger a new API search if results are already loaded.
+            // A new search will automatically use the new sort parameter.
             if (jurisprudenceMasterResults.length > 0) {
                 handleJurisprudenceSearch();
             }
             return;
         }
 
-        jurisprudenceMasterResults.sort((a, b) => {
-            const dateA = a.dateObject;
-            const dateB = b.dateObject;
-            if (!dateA || !dateB) return 0;
+        // Client-side sorting for decision date
+        if (jurisprudenceMasterResults.length > 0) {
+             if (jurisprudenceMasterResults.length < totalJurisprudenceResults && !isJurisprudenceLoadingInBackground) {
+                showNotification('Let op: sortering op uitspraakdatum wordt enkel toegepast op de reeds geladen resultaten.', 'warning');
+            }
+
+            jurisprudenceMasterResults.sort((a, b) => {
+                const dateA = a.dateObject;
+                const dateB = b.dateObject;
+
+                // Als een van de date objecten niet geldig is, geen wijziging in volgorde
+                if (!dateA || !dateB || isNaN(dateA) || isNaN(dateB)) return 0;
+                
+                if (sortValue === 'date-desc') return dateB - dateA;
+                if (sortValue === 'date-asc') return dateA - dateB;
+                return 0;
+            });
             
-            if (sortValue === 'date-desc') return dateB - dateA;
-            if (sortValue === 'date-asc') return dateA - dateB;
-            return 0;
-        });
-        
-        handleSmartSearch();
+            // Re-apply filters and render the results after sorting
+            handleSmartSearch();
+        } else {
+             showNotification("Voer eerst een zoekopdracht uit voordat u sorteert.", "info");
+        }
     };
     
     // --- WETTENBANK SEARCH (SRU 2.0) ---
