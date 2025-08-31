@@ -331,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                  elements.smartSearchSection.classList.remove('hidden');
 
                  const entries = Array.from(xmlDoc.getElementsByTagName('entry'));
-                 const newResults = entries.map(parseJurisprudenceEntry);
+                 const newResults = entries.map(entry => parseJurisprudenceEntry(entry));
                  jurisprudenceMasterResults.push(...newResults);
                  
                  // Initial sort and render
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if(entries.length === 0) break; // No more results
 
-                const newResults = entries.map(parseJurisprudenceEntry);
+                const newResults = entries.map(entry => parseJurisprudenceEntry(entry));
                 jurisprudenceMasterResults.push(...newResults);
                 
                 // Update results if user is filtering, this will also re-render
@@ -402,51 +402,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const parseJurisprudenceEntry = (entry) => {
         const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
         const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
-        const updatedDate = entry.querySelector('updated')?.textContent;
-        const publicatiedatum = new Date(updatedDate);
+        
+        const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
+        const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
     
+        const issuedDateRaw = entry.querySelector('issued')?.textContent;
+        const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
+        
+        const decisionDateRaw = entry.querySelector('date')?.textContent; 
+        let decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
+
         let instantie = 'N/A';
-        let uitspraakdatum = 'N/A';
         let zaaknummer = 'N/A';
-        let dateObject = null;
     
         const parts = fullTitle.split(',').map(p => p.trim());
     
         if (parts.length >= 3) {
             instantie = parts[1];
             const dateZaakPart = parts[2];
-            const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
-            if (dateMatch) {
-                dateObject = new Date(dateMatch[1]);
-                if (!isNaN(dateObject)) {
-                    uitspraakdatum = dateObject.toLocaleDateString('nl-NL');
-                } else {
-                    dateObject = null; // Invalide datum, reset
-                }
-                
-                const zaakSplit = dateZaakPart.split('/');
-                if (zaakSplit.length > 1) {
-                    zaaknummer = zaakSplit.slice(1).join('/').trim();
-                } else {
-                    zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
-                }
+
+            if (!decisionDateObject) {
+                 const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
+                 if (dateMatch) {
+                    const parsedDate = new Date(dateMatch[1]);
+                    if (!isNaN(parsedDate)) {
+                        decisionDateObject = parsedDate;
+                    }
+                 }
+            }
+            
+            const zaakSplit = dateZaakPart.split('/');
+            if (zaakSplit.length > 1) {
+                zaaknummer = zaakSplit.slice(1).join('/').trim();
+            } else {
+                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
             }
         } else if (parts.length === 2) {
              instantie = parts[1];
         }
 
-        // Fallback: Als dateObject niet uit de titel geparsed kon worden, gebruik publicatiedatum
-        if (!dateObject) {
-            dateObject = publicatiedatum;
-            uitspraakdatum = `(publicatie: ${publicatiedatum.toLocaleDateString('nl-NL')})`;
+        // Fallback voor uitspraakdatum als die nog steeds niet is gevonden
+        if (!decisionDateObject) {
+            decisionDateObject = issuedDate || lastUpdatedDate;
         }
     
         return {
-            title: fullTitle, ecli, instantie, uitspraakdatum, zaaknummer,
+            title: fullTitle,
+            ecli,
+            instantie,
+            uitspraakdatum: decisionDateObject ? decisionDateObject.toLocaleDateString('nl-NL') : 'N/A',
+            zaaknummer,
             summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
             link: entry.querySelector('link')?.getAttribute('href') || '#',
-            dateObject: dateObject,
-            publicatiedatum: publicatiedatum
+            dateObject: decisionDateObject,
+            publicatiedatum: issuedDate ? issuedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
+            gewijzigd: lastUpdatedDate ? lastUpdatedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar'
         };
     };
     
@@ -642,6 +652,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     "ECLI": highlightText(item.ecli, keyword),
                     "Instantie": item.instantie,
                     "Uitspraakdatum": item.uitspraakdatum,
+                    "Publicatiedatum": item.publicatiedatum,
+                    "Laatste update": item.gewijzigd,
                     "Zaaknummer(s)": item.zaaknummer,
                 },
                 `jurisprudence-${globalIndex}`
