@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- PROXY-INSTELLING ---
     const PROXY_URL = 'https://corsproxy.io/?';
-    const MAX_JURISPRUDENCE_RESULTS = 5000;
+    const MAX_JURISPRUDENCE_RESULTS = 10000;
 
     // --- DATA (direct in de code voor betrouwbaarheid) ---
     const rechtsgebieden = [
