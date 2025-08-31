@@ -435,71 +435,72 @@ document.addEventListener('DOMContentLoaded', () => {
         sortAndRenderJurisprudence();
     };
 
-    const parseJurisprudenceEntry = (entry) => {
-        const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
-        const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
-        
-        // Gewijzigd-datum (dcterms:modified)
-        const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
-        const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
-    
-        // Publicatiedatum (dcterms:issued)
-        const issuedDateRaw = entry.querySelector('issued')?.textContent;
-        const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
-        
-        // Uitspraakdatum (dcterms:date)
-        const decisionDateRaw = entry.querySelector('date')?.textContent; 
-        let decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
+ const parseJurisprudenceEntry = (entry) => {
+    // Bronnen uit de API/Atom
+    const fullTitle = entry.querySelector('title')?.textContent || 'Geen titel beschikbaar';
+    const ecli = entry.querySelector('id')?.textContent || 'Geen ECLI';
 
-        let instantie = 'N/A';
-        let zaaknummer = 'N/A';
-        
-        // Fallback: Parse from title if specific tags are missing
-        const parts = fullTitle.split(',').map(p => p.trim());
-        if (parts.length >= 2) {
-            instantie = parts[1];
-        }
-        if (parts.length >= 3) {
-            const dateZaakPart = parts[2];
+    // Metadata datums
+    const lastUpdatedDateRaw = entry.querySelector('updated')?.textContent;
+    const lastUpdatedDate = lastUpdatedDateRaw ? new Date(lastUpdatedDateRaw) : null;
 
-            // Attempt to parse date from title ONLY if dcterms:date is missing
-            if (!decisionDateObject) {
-                 const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
-                 if (dateMatch) {
-                    const parsedDate = new Date(dateMatch[1]);
-                    if (!isNaN(parsedDate)) {
-                        decisionDateObject = parsedDate;
-                    }
-                 }
-            }
-            
-            // Attempt to parse zaaknummer from title
-            const zaakSplit = dateZaakPart.split('/');
-            if (zaakSplit.length > 1) {
-                zaaknummer = zaakSplit.slice(1).join('/').trim();
-            } else {
-                zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').trim();
-            }
-        }
+    const issuedDateRaw = entry.querySelector('issued')?.textContent;
+    const issuedDate = issuedDateRaw ? new Date(issuedDateRaw) : null;
 
-        // Fallback for sorting date object
+    const decisionDateRaw = entry.querySelector('date')?.textContent;
+    let decisionDateObject = decisionDateRaw ? new Date(decisionDateRaw) : null;
+    let uitspraakdatum = decisionDateObject ? decisionDateObject.toLocaleDateString('nl-NL') : 'Niet beschikbaar';
+
+    let instantie = 'N/A';
+    let zaaknummer = 'N/A';
+
+    // Extract instantie, uitspraakdatum (fallback) en zaaknummer uit de title
+    const parts = fullTitle.split(',').map(p => p.trim());
+    if (parts.length >= 2) {
+        instantie = parts[1];
+    }
+    if (parts.length >= 3) {
+        const dateZaakPart = parts[2];
+        // Extra: parse uitspraakdatum uit titel als dcterms:date ontbreekt
         if (!decisionDateObject) {
-            decisionDateObject = issuedDate || lastUpdatedDate;
+            const dateMatch = dateZaakPart.match(/(\d{4}-\d{2}-\d{2})/);
+            if (dateMatch) {
+                const parsedDate = new Date(dateMatch[1]);
+                if (!isNaN(parsedDate)) {
+                    decisionDateObject = parsedDate;
+                    uitspraakdatum = parsedDate.toLocaleDateString('nl-NL');
+                }
+            }
         }
-    
-        return {
-            title: fullTitle,
-            ecli,
-            instantie,
-            uitspraakdatum: decisionDateObject ? decisionDateObject.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
-            zaaknummer,
-            summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
-            link: entry.querySelector('link')?.getAttribute('href') || '#',
-            dateObject: decisionDateObject,
-            publicatiedatum: issuedDate ? issuedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
-            gewijzigd: lastUpdatedDate ? lastUpdatedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar'
-        };
+        // Zaaknummer(s) na slash(es) in het 3e deel, anders alles behalve de datum
+        const zaakSplit = dateZaakPart.split('/');
+        if (zaakSplit.length > 1) {
+            zaaknummer = zaakSplit.slice(1).join('/').replace(/^\s*|\s*$/g, '');
+        } else {
+            zaaknummer = dateZaakPart.replace(/(\d{4}-\d{2}-\d{2})/, '').replace(/^\s*|\s*$/g, '');
+        }
+        if (!zaaknummer || zaaknummer === '') zaaknummer = 'Niet beschikbaar';
+    }
+
+    // Fallback (alleen voor sorteren, niet voor tonen)
+    if (!decisionDateObject) {
+        decisionDateObject = issuedDate || lastUpdatedDate;
+    }
+
+    return {
+        title: fullTitle,
+        ecli,
+        instantie,
+        uitspraakdatum, // Dit is dcterms:date of fallback uit title
+        zaaknummer,     // Uit titel
+        summary: entry.querySelector('summary')?.textContent || 'Geen samenvatting beschikbaar.',
+        link: entry.querySelector('link')?.getAttribute('href') || '#',
+        dateObject: decisionDateObject,
+        publicatiedatum: issuedDate ? issuedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar',
+        gewijzigd: lastUpdatedDate ? lastUpdatedDate.toLocaleDateString('nl-NL') : 'Niet beschikbaar'
     };
+};
+
     
     const sortAndRenderJurisprudence = () => {
         // First, apply smart search filter to get the current relevant subset
