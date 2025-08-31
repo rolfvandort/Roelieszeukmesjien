@@ -260,47 +260,47 @@ document.addEventListener('DOMContentLoaded', () => {
     const clearCreatorInput = () => { elements.creator.value = ''; elements.creator.removeAttribute('data-id'); elements.creatorSuggestions.innerHTML = ''; elements.clearCreator.style.display = 'none'; };
 
     // --- ZOEKFUNCTIES (JURISPRUDENTIE) ---
-    const buildJurisprudenceParams = (from = 0) => {
-        if (!currentJurisprudenceParams) {
-            const params = new URLSearchParams();
-            const dateType = elements.dateFilterType.value;
-
-            if (dateType === 'uitspraakdatum') {
-                if (elements.dateFrom.value) params.append('date', elements.dateFrom.value);
-                if (elements.dateTo.value) params.append('date', elements.dateTo.value);
-            } else if (dateType === 'wijzigingsdatum') {
-                if (elements.dateFrom.value) params.append('modified', `${elements.dateFrom.value}T00:00:00`);
-                if (elements.dateTo.value) params.append('modified', `${elements.dateTo.value}T23:59:59`);
-            }
-
-            if (elements.subject.value) params.append('subject', elements.subject.value);
-            if (elements.procedure.value) params.append('procedure', elements.procedure.value);
-            if (elements.creator.dataset.id) params.append('creator', elements.creator.dataset.id);
-            const selectedType = document.querySelector('input[name="documentType"]:checked')?.value;
-            if (selectedType) params.append('type', selectedType);
-            params.append('return', 'DOC');
-            
+    const buildJurisprudenceParams = (from = 0, includeSort = false) => {
+        const params = new URLSearchParams();
+        const dateType = elements.dateFilterType.value;
+    
+        if (dateType === 'uitspraakdatum') {
+            if (elements.dateFrom.value) params.append('date', elements.dateFrom.value);
+            if (elements.dateTo.value) params.append('date', elements.dateTo.value);
+        } else if (dateType === 'wijzigingsdatum') {
+            if (elements.dateFrom.value) params.append('modified', `${elements.dateFrom.value}T00:00:00`);
+            if (elements.dateTo.value) params.append('modified', `${elements.dateTo.value}T23:59:59`);
+        }
+    
+        if (elements.subject.value) params.append('subject', elements.subject.value);
+        if (elements.procedure.value) params.append('procedure', elements.procedure.value);
+        if (elements.creator.dataset.id) params.append('creator', elements.creator.dataset.id);
+        const selectedType = document.querySelector('input[name="documentType"]:checked')?.value;
+        if (selectedType) params.append('type', selectedType);
+        params.append('return', 'DOC');
+    
+        if (includeSort) {
             const sortValue = elements.sortOrder.value;
             if (sortValue === 'ASC' || sortValue === 'DESC') {
                 params.append('sort', sortValue);
             }
-            
-            params.append('max', '1000');
-            currentJurisprudenceParams = params;
         }
-        
-        currentJurisprudenceParams.set('from', from);
-        return currentJurisprudenceParams;
+    
+        params.append('max', '1000');
+        params.set('from', from);
+    
+        return params;
     };
 
-    const handleJurisprudenceSearch = async () => {
-        // Reset state for a new search
-        jurisprudenceMasterResults = [];
-        totalJurisprudenceResults = 0;
-        jurisprudenceCurrentPage = 1;
-        currentJurisprudenceParams = null; // Force rebuild of params
-        isJurisprudenceLoadingInBackground = false;
-        
+    const handleJurisprudenceSearch = async (isNewSearch = false) => {
+        if (isNewSearch) {
+            jurisprudenceMasterResults = [];
+            totalJurisprudenceResults = 0;
+            jurisprudenceCurrentPage = 1;
+            currentJurisprudenceParams = null; 
+            isJurisprudenceLoadingInBackground = false;
+        }
+
         elements.jurisprudenceResults.innerHTML = '';
         elements.jurisprudencePagination.innerHTML = '';
         elements.smartSearchSection.classList.add('hidden');
@@ -309,7 +309,8 @@ document.addEventListener('DOMContentLoaded', () => {
         showLoading(true, true);
         displayActiveFilters();
         
-        const params = buildJurisprudenceParams(1); // Start from 1
+        const includeSort = (elements.sortOrder.value === 'ASC' || elements.sortOrder.value === 'DESC');
+        const params = buildJurisprudenceParams(1, includeSort); 
         const requestUrl = `${PROXY_URL}${encodeURIComponent(`https://data.rechtspraak.nl/uitspraken/zoeken?${params.toString()}`)}`;
 
         try {
@@ -333,7 +334,8 @@ document.addEventListener('DOMContentLoaded', () => {
                  const newResults = entries.map(parseJurisprudenceEntry);
                  jurisprudenceMasterResults.push(...newResults);
                  
-                 handleSortChange(); // Sorteert en rendert de eerste pagina
+                 // Initial sort and render
+                 sortAndRenderJurisprudence(); 
                  
                  if(totalJurisprudenceResults > 1000) {
                     loadAllJurisprudenceInBackground();
@@ -362,7 +364,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const maxToFetch = Math.min(totalJurisprudenceResults, MAX_JURISPRUDENCE_RESULTS);
 
         while(from <= maxToFetch) {
-             const params = buildJurisprudenceParams(from);
+             const includeSort = (elements.sortOrder.value === 'ASC' || elements.sortOrder.value === 'DESC');
+             const params = buildJurisprudenceParams(from, includeSort);
              const requestUrl = `${PROXY_URL}${encodeURIComponent(`https://data.rechtspraak.nl/uitspraken/zoeken?${params.toString()}`)}`;
 
              try {
@@ -377,8 +380,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const newResults = entries.map(parseJurisprudenceEntry);
                 jurisprudenceMasterResults.push(...newResults);
                 
-                // Update results if user is filtering
-                handleSmartSearch();
+                // Update results if user is filtering, this will also re-render
+                sortAndRenderJurisprudence();
 
                 from += entries.length;
 
@@ -391,6 +394,9 @@ document.addEventListener('DOMContentLoaded', () => {
         isJurisprudenceLoadingInBackground = false;
         elements.backgroundLoader.style.display = 'none';
         showNotification(`Alle ${jurisprudenceMasterResults.length} resultaten zijn geladen.`, 'success');
+        
+        // Final sort and render after all results are loaded
+        sortAndRenderJurisprudence();
     };
 
     const parseJurisprudenceEntry = (entry) => {
@@ -443,6 +449,34 @@ document.addEventListener('DOMContentLoaded', () => {
             publicatiedatum: publicatiedatum
         };
     };
+    
+    const sortAndRenderJurisprudence = () => {
+        // First, apply smart search filter to get the current relevant subset
+        handleSmartSearch();
+
+        // Then, sort the filtered results
+        const sortValue = elements.sortOrder.value;
+        if (sortValue === 'date-desc' || sortValue === 'date-asc') {
+             if (jurisprudenceMasterResults.length < totalJurisprudenceResults && !isJurisprudenceLoadingInBackground) {
+                showNotification('Let op: sortering op uitspraakdatum wordt enkel toegepast op de reeds geladen resultaten.', 'warning');
+            }
+            
+            jurisprudenceCurrentResults.sort((a, b) => {
+                const dateA = a.dateObject;
+                const dateB = b.dateObject;
+
+                if (!dateA || !dateB || isNaN(dateA) || isNaN(dateB)) return 0;
+                
+                if (sortValue === 'date-desc') return dateB - dateA;
+                if (sortValue === 'date-asc') return dateA - dateB;
+                return 0;
+            });
+        }
+        
+        // Finally, render the sorted and filtered results
+        renderJurisprudenceResults();
+    }
+
 
     const handleSmartSearch = () => {
         jurisprudenceCurrentPage = 1; // Reset to first page after filtering
@@ -468,41 +502,21 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         }
-        renderJurisprudenceResults();
+        // Don't render here, let sortAndRenderJurisprudence handle it
     };
     
     const handleSortChange = () => {
         const sortValue = elements.sortOrder.value;
-        // API-based sorting for publication date
+        
+        // For publication date, a new API call is needed with the 'sort' parameter.
         if (sortValue === 'ASC' || sortValue === 'DESC') {
-            // Only trigger a new API search if results are already loaded.
-            // A new search will automatically use the new sort parameter.
-            if (jurisprudenceMasterResults.length > 0) {
-                handleJurisprudenceSearch();
-            }
+            handleJurisprudenceSearch(true); // Treat as a new search
             return;
         }
 
-        // Client-side sorting for decision date
+        // For decision date, sort the existing results client-side and re-render.
         if (jurisprudenceMasterResults.length > 0) {
-             if (jurisprudenceMasterResults.length < totalJurisprudenceResults && !isJurisprudenceLoadingInBackground) {
-                showNotification('Let op: sortering op uitspraakdatum wordt enkel toegepast op de reeds geladen resultaten.', 'warning');
-            }
-
-            jurisprudenceMasterResults.sort((a, b) => {
-                const dateA = a.dateObject;
-                const dateB = b.dateObject;
-
-                // Als een van de date objecten niet geldig is, geen wijziging in volgorde
-                if (!dateA || !dateB || isNaN(dateA) || isNaN(dateB)) return 0;
-                
-                if (sortValue === 'date-desc') return dateB - dateA;
-                if (sortValue === 'date-asc') return dateA - dateB;
-                return 0;
-            });
-            
-            // Re-apply filters and render the results after sorting
-            handleSmartSearch();
+            sortAndRenderJurisprudence();
         } else {
              showNotification("Voer eerst een zoekopdracht uit voordat u sorteert.", "info");
         }
