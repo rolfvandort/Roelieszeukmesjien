@@ -287,8 +287,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const entries = xmlDoc.getElementsByTagName('entry');
             jurisprudenceMasterResults = Array.from(entries).map(entry => {
                 const title = entry.querySelector('title')?.textContent || 'Geen titel';
-                // De uitspraakdatum is vaak onderdeel van de titel, bv: "... Rechtbank Amsterdam 2023-08-30"
-                const dateMatch = title.match(/(\d{4}-\d{2}-\d{2})$/);
+                
+                // *** GECORRIGEERDE LOGICA ***
+                // Zoek naar het JJJJ-MM-DD patroon ergens in de titel, niet alleen aan het eind.
+                const dateMatch = title.match(/(\d{4}-\d{2}-\d{2})/);
                 const uitspraakdatum = dateMatch ? new Date(dateMatch[1]) : null;
 
                 return {
