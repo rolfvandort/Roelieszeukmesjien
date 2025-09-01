@@ -743,10 +743,12 @@ document.addEventListener('DOMContentLoaded', () => {
     };
 
     const createResultItemHTML = (type, title, link, content, meta, index) => {
-        const metaHTML = Object.entries(meta)
-            .filter(([, value]) => value && value.trim() !== 'N/A' && value.trim() !== '' && value.trim() !== 'Niet beschikbaar')
-            .map(([key, value]) => `<span><strong>${key}:</strong> ${value}</span>`).join('');
         
+        // //--------- DEBUG: toon altijd alle labels, ook "Niet beschikbaar" ---------
+const metaHTML = Object.entries(meta)
+    .map(([key, value]) => `**${key}:** ${value}`).join('');
+// //-----------------------------------------------------------------------
+
         const summaryNeedsToggle = content.length > 350;
 
         let actionsHTML = `<a href="${link}" target="_blank" rel="noopener noreferrer" class="tertiary-button">Bekijk origineel</a>`;
