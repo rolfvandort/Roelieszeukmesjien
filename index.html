@@ -23,7 +23,6 @@
             </div>
         </div>
     </div>
-
     <div id="mainContainer" class="container">
         <div class="main-content-grid">
             <div class="search-column">
@@ -34,26 +33,23 @@
                     <div class="card-body">
                         <div class="quick-search-section">
                             <div class="search-input-container">
-                                <input type="text" id="quickSearchInput" placeholder="Zoek op trefwoord, ECLI, zaaknummer..." class="quick-search-input">
-                                <button class="quick-search-button" id="quickSearchButton">
+                                <input type="text" id="quickSearchInput" placeholder="Zoek op trefwoord, ECLI, zaaknummer..." class="quick-search-input" autocomplete="off">
+                                <button class="quick-search-button" id="quickSearchButton" aria-label="Zoeken">
                                     <span>🔍</span>
                                 </button>
                             </div>
                         </div>
-
                         <div class="filter-toggle-container">
-                            <button class="tertiary-button" id="showFiltersButton">
+                            <button class="tertiary-button" id="showFiltersButton" aria-expanded="false">
                                 <span id="filterToggleIcon">▼</span> Geavanceerd zoeken
                             </button>
                             <button class="reset-button" id="resetFiltersButton" style="display: none;">
                                 Filters wissen
                             </button>
                         </div>
-
                         <div id="apiFilters" class="filters-section" style="display: none;">
                             <div class="filter-section">
-                                <div class="advanced-filter-grid">
-                                    
+                                <div class="advanced-filter-grid">                                    
                                     <div class="filter-group date-range-group" id="dateFilters">
                                         <label>Periode</label>
                                         <div class="date-inputs-container">
@@ -80,7 +76,6 @@
                                             </div>
                                         </div>
                                     </div>
-
                                     <div class="filter-group">
                                         <label for="subject">Rechtsgebied</label>
                                         <select id="subject" class="filter-input">
@@ -90,7 +85,7 @@
                                     <div class="filter-group autocomplete-container">
                                         <label for="creator">Instantie</label>
                                         <div class="input-with-clear">
-                                            <input type="text" id="creator" class="filter-input" placeholder="Begin met typen...">
+                                            <input type="text" id="creator" class="filter-input" placeholder="Begin met typen..." autocomplete="off">
                                             <button type="button" class="clear-input" id="clearCreator" style="display: none;">✕</button>
                                         </div>
                                         <div id="creatorSuggestions" class="autocomplete-suggestions"></div>
@@ -109,8 +104,7 @@
                                             <label class="radio-option"><input type="radio" name="documentType" value="Conclusie"><span class="radio-custom"></span>Conclusie</label>
                                         </div>
                                     </div>
-
-                                     <div class="filter-group">
+                                    <div class="filter-group">
                                         <label for="sortOrder">Sortering</label>
                                         <select id="sortOrder" class="filter-input">
                                             <option value="DESC" selected>Nieuwste eerst (publicatie)</option>
@@ -125,7 +119,6 @@
                                 <button class="primary-button" id="apiSearchButton"><span class="button-icon"></span> Zoek uitspraken</button>
                             </div>
                         </div>
-
                         <div id="jurisprudenceStatus" class="status-message"></div>
                         <div id="loadingIndicator" class="loading-indicator" style="display: none;">
                             <div class="spinner"></div>
@@ -136,8 +129,7 @@
                             <div id="totalResultsText"></div>
                             <div id="activeFilters" class="active-filters-container"></div>
                         </div>
-
-                        <div id="smartSearchSection" class="smart-search-section hidden">
+                        <div id="smartSearchSection" class="smart-search-section hidden" aria-live="polite">
                             <hr class="separator">
                             <div class="filter-section">
                                 <h3>Verfijn resultaten</h3>
@@ -145,8 +137,8 @@
                                     <div class="filter-group">
                                         <label for="smartSearchInput">Zoek binnen resultaten</label>
                                         <div class="search-input-container">
-                                            <input type="text" id="smartSearchInput" placeholder="Zoek op trefwoord..." class="filter-input">
-                                             <div id="backgroundLoader" class="background-loader" style="display: none;">
+                                            <input type="text" id="smartSearchInput" placeholder="Zoek op trefwoord..." class="filter-input" autocomplete="off">
+                                            <div id="backgroundLoader" class="background-loader" style="display: none;">
                                                 <div class="spinner-small"></div>
                                                 <span>Meer laden...</span>
                                             </div>
@@ -164,13 +156,11 @@
                                 </div>
                             </div>
                         </div>
-
                         <div id="jurisprudenceResults" class="results-container"></div>
                         <div id="jurisprudencePagination" class="pagination-container"></div>
                     </div>
                 </div>
             </div>
-
             <div class="search-column">
                  <div class="dashboard-card">
                     <div class="card-header">
@@ -180,7 +170,7 @@
                         <div class="filter-group">
                             <label for="wettenbankKeyword">Zoeken op trefwoord:</label>
                             <div class="search-input-container">
-                                <input type="text" id="wettenbankKeyword" placeholder="bv. bestemmingsplan" class="filter-input">
+                                <input type="text" id="wettenbankKeyword" placeholder="bv. bestemmingsplan" class="filter-input" autocomplete="off">
                                 <button class="primary-button" id="wettenbankSearchButton">Zoek</button>
                             </div>
                         </div>
@@ -198,9 +188,7 @@
             </div>
         </div>
     </div>
-
     <div id="documentViewer" class="document-viewer-container" style="display: none;"></div>
-
     <div id="keywordModal" class="modal-container" style="display: none;">
         <div class="modal-card">
             <div class="modal-header">
@@ -209,16 +197,13 @@
             </div>
             <div class="modal-body">
                 <p>Kies de trefwoorden waarmee je in de Wettenbank wilt zoeken.</p>
-                <div id="keywordOptions" class="keyword-options">
-                    </div>
+                <div id="keywordOptions" class="keyword-options"></div>
             </div>
             <div class="modal-footer">
                 <button id="searchWithKeywordsButton" class="primary-button">Zoek in Wettenbank</button>
             </div>
         </div>
     </div>
-
-
     <script src="script.js"></script>
 </body>
 </html>
