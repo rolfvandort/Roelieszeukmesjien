@@ -904,6 +904,45 @@ document.addEventListener('DOMContentLoaded', () => {
             showNotification('Selecteer minimaal één trefwoord.', 'warning');
         }
     };
+
+    // ======= AI Samenvatting Functie ========
+async function fetchAISummary(text) {
+    const apiKey = 'JOUW_HUGGINGFACE_API_KEY_HIER'; // Vervang met je eigen key!
+    const endpoint = "https://api-inference.huggingface.co/models/google/gemma-7b-it"; // Goed NL, snel + gratis
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${apiKey}`,
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ inputs: text })
+    });
+    const result = await response.json();
+    return result?.[0]?.generated_text || "Geen samenvatting beschikbaar";
+}
+
+// ======= Voeg samenvatting toe aan resultaat ========
+async function addAISummariesToResults(results) {
+    for (let item of results) {
+        try {
+            item.aiSummary = await fetchAISummary(item.summary || item.title);
+        } catch {
+            item.aiSummary = "Samenvatting kon niet geladen worden";
+        }
+    }
+    renderJurisprudenceResults();
+}
+
+// ======= Aanroep integreren na ophalen resultaten ========
+async function handleJurisprudenceSearch(isNewSearch = false) {
+    // ... je bestaande zoeklogica ...
+    // (Laatste deel, na het ophalen en renderen van resultaten:)
+    if (jurisprudenceCurrentResults.length > 0) {
+        await addAISummariesToResults(jurisprudenceCurrentResults);
+    }
+}
+
+    
     // --- INITIALISATIEAPP EN AFSLUITING ---
     initializeApp();
 });
